@@ -1,0 +1,145 @@
+[
+  {
+    "_id": "1",
+    "loanId": {
+      "_id": "1",
+      "title": "Personal Term Loan",
+      "category": "Personal",
+      "interestRate": 8.5,
+      "maxLoanLimit": 50000
+    },
+    "userId": {
+      "_id": "5",
+      "name": "John Borrower",
+      "email": "borrower1@loanlink.com"
+    },
+    "firstName": "John",
+    "lastName": "Doe",
+    "contactNumber": "+1234567890",
+    "nationalId": "ID123456789",
+    "incomeSource": "salary",
+    "monthlyIncome": 5000,
+    "loanAmount": 15000,
+    "reasonForLoan": "Need funds for home renovation",
+    "address": "123 Main St, City, State, ZIP",
+    "extraNotes": "Planning to renovate kitchen and bathroom",
+    "status": "pending",
+    "applicationFeeStatus": "unpaid",
+    "createdAt": "2024-02-15T10:30:00.000Z"
+  },
+  {
+    "_id": "2",
+    "loanId": {
+      "_id": "2",
+      "title": "Small Business Growth Fund",
+      "category": "Business",
+      "interestRate": 7.0,
+      "maxLoanLimit": 200000
+    },
+    "userId": {
+      "_id": "5",
+      "name": "John Borrower",
+      "email": "borrower1@loanlink.com"
+    },
+    "firstName": "John",
+    "lastName": "Doe",
+    "contactNumber": "+1234567890",
+    "nationalId": "ID123456789",
+    "incomeSource": "business",
+    "monthlyIncome": 8000,
+    "loanAmount": 25000,
+    "reasonForLoan": "Expand my small business operations",
+    "address": "456 Business Ave, City, State, ZIP",
+    "extraNotes": "Need equipment for manufacturing",
+    "status": "approved",
+    "applicationFeeStatus": "paid",
+    "approvedAt": "2024-02-16T14:20:00.000Z",
+    "createdAt": "2024-02-14T09:15:00.000Z"
+  },
+  {
+    "_id": "3",
+    "loanId": {
+      "_id": "3",
+      "title": "Home Renovation Loan",
+      "category": "Home",
+      "interestRate": 6.5,
+      "maxLoanLimit": 100000
+    },
+    "userId": {
+      "_id": "6",
+      "name": "Jane Borrower",
+      "email": "borrower2@loanlink.com"
+    },
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "contactNumber": "+1987654321",
+    "nationalId": "ID987654321",
+    "incomeSource": "salary",
+    "monthlyIncome": 6000,
+    "loanAmount": 30000,
+    "reasonForLoan": "Home improvement project",
+    "address": "789 Home St, City, State, ZIP",
+    "extraNotes": "Renovating the entire house",
+    "status": "approved",
+    "applicationFeeStatus": "unpaid",
+    "approvedAt": "2024-02-17T11:45:00.000Z",
+    "createdAt": "2024-02-13T16:22:00.000Z"
+  },
+  {
+    "_id": "4",
+    "loanId": {
+      "_id": "4",
+      "title": "Education Assistance Program",
+      "category": "Education",
+      "interestRate": 4.5,
+      "maxLoanLimit": 30000
+    },
+    "userId": {
+      "_id": "6",
+      "name": "Jane Borrower",
+      "email": "borrower2@loanlink.com"
+    },
+    "firstName": "Jane",
+    "lastName": "Smith",
+    "contactNumber": "+1987654321",
+    "nationalId": "ID987654321",
+    "incomeSource": "salary",
+    "monthlyIncome": 4000,
+    "loanAmount": 20000,
+    "reasonForLoan": "Pursue higher education",
+    "address": "321 Education Ln, City, State, ZIP",
+    "extraNotes": "For master's degree program",
+    "status": "rejected",
+    "applicationFeeStatus": "unpaid",
+    "rejectedAt": "2024-02-18T08:30:00.000Z",
+    "createdAt": "2024-02-12T13:10:00.000Z"
+  },
+  {
+    "_id": "5",
+    "loanId": {
+      "_id": "5",
+      "title": "Auto Loan - New Vehicle",
+      "category": "Vehicle",
+      "interestRate": 5.5,
+      "maxLoanLimit": 60000
+    },
+    "userId": {
+      "_id": "5",
+      "name": "John Borrower",
+      "email": "borrower1@loanlink.com"
+    },
+    "firstName": "John",
+    "lastName": "Doe",
+    "contactNumber": "+1234567890",
+    "nationalId": "ID123456789",
+    "incomeSource": "salary",
+    "monthlyIncome": 5500,
+    "loanAmount": 35000,
+    "reasonForLoan": "Purchase a new car",
+    "address": "654 Car St, City, State, ZIP",
+    "extraNotes": "Family vehicle needed",
+    "status": "pending",
+    "applicationFeeStatus": "unpaid",
+    "createdAt": "2024-02-16T12:00:00.000Z"
+  }
+]

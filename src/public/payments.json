@@ -1,0 +1,12 @@
+[
+  {
+    "_id": "1",
+    "loanApplicationId": "2",
+    "userId": "5",
+    "amount": 10,
+    "transactionId": "cs_test_1234567890",
+    "paymentStatus": "success",
+    "email": "borrower1@loanlink.com",
+    "createdAt": "2024-02-16T14:25:00.000Z"
+  }
+]

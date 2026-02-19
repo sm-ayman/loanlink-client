@@ -1,0 +1,167 @@
+[
+    {
+        "_id": "1",
+        "title": "Personal Term Loan",
+        "category": "Personal",
+        "interestRate": 8.5,
+        "maxAmount": 50000,
+        "description": "Achieve your personal goals with our flexible Personal Term Loan. whether it's a dream vacation, wedding expenses, or consolidating debt, we offer competitive rates and easy repayment terms.",
+        "image": "https://images.unsplash.com/photo-1579621970795-87facc2f976d?q=80&w=2070&auto=format&fit=crop",
+        "requirements": [
+            "Valid Government ID",
+            "Proof of Income (3 months)",
+            "Bank Statement (6 months)",
+            "Credit Score > 650"
+        ],
+        "emiPlans": [
+            {
+                "duration": "12 Months",
+                "rate": "8.5%"
+            },
+            {
+                "duration": "24 Months",
+                "rate": "9.0%"
+            },
+            {
+                "duration": "36 Months",
+                "rate": "9.5%"
+            }
+        ]
+    },
+    {
+        "_id": "2",
+        "title": "Small Business Growth Fund",
+        "category": "Business",
+        "interestRate": 7.0,
+        "maxAmount": 200000,
+        "description": "Expand your business operations with our Small Business Growth Fund. Ideal for inventory purchase, equipment upgrade, or marketing campaigns. We support your entrepreneurial journey.",
+        "image": "https://images.unsplash.com/photo-1664575602276-acd073f104c1?q=80&w=2070&auto=format&fit=crop",
+        "requirements": [
+            "Business Registration Documents",
+            "Business Bank Statements (1 year)",
+            "Tax Returns (2 years)",
+            "Business Plan"
+        ],
+        "emiPlans": [
+            {
+                "duration": "24 Months",
+                "rate": "7.0%"
+            },
+            {
+                "duration": "48 Months",
+                "rate": "7.5%"
+            },
+            {
+                "duration": "60 Months",
+                "rate": "8.0%"
+            }
+        ]
+    },
+    {
+        "_id": "3",
+        "title": "Home Renovation Loan",
+        "category": "Home",
+        "interestRate": 6.5,
+        "maxAmount": 100000,
+        "description": "Transform your living space with our Home Renovation Loan. From kitchen upgrades to adding a new room, make your home your dream sanctuary.",
+        "image": "https://images.unsplash.com/photo-1628151016003-346761664f33?q=80&w=2070&auto=format&fit=crop",
+        "requirements": [
+            "Property Ownership Proof",
+            "Renovation Estimate",
+            "Income Proof",
+            "Mortgage Statement"
+        ],
+        "emiPlans": [
+            {
+                "duration": "36 Months",
+                "rate": "6.5%"
+            },
+            {
+                "duration": "60 Months",
+                "rate": "6.8%"
+            },
+            {
+                "duration": "84 Months",
+                "rate": "7.2%"
+            }
+        ]
+    },
+    {
+        "_id": "4",
+        "title": "Education Assistance Program",
+        "category": "Education",
+        "interestRate": 4.5,
+        "maxAmount": 30000,
+        "description": "Invest in your future with our Education Assistance Program. Covers tuition fees, books, and living expenses for higher education.",
+        "image": "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2070&auto=format&fit=crop",
+        "requirements": [
+            "Admission Letter",
+            "Student ID",
+            "Co-signer Income Proof",
+            "Academic Records"
+        ],
+        "emiPlans": [
+            {
+                "duration": "48 Months",
+                "rate": "4.5%"
+            },
+            {
+                "duration": "72 Months",
+                "rate": "5.0%"
+            }
+        ]
+    },
+    {
+        "_id": "5",
+        "title": "Auto Loan - New Vehicle",
+        "category": "Vehicle",
+        "interestRate": 5.5,
+        "maxAmount": 60000,
+        "description": "Drive your dream car today with our hassle-free Auto Loan. Quick approval and flexible down payment options for new vehicles.",
+        "image": "https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?q=80&w=2070&auto=format&fit=crop",
+        "requirements": [
+            "Driving License",
+            "Vehicle Proforma Invoice",
+            "Proof of Employment",
+            "Residence Proof"
+        ],
+        "emiPlans": [
+            {
+                "duration": "36 Months",
+                "rate": "5.5%"
+            },
+            {
+                "duration": "60 Months",
+                "rate": "6.0%"
+            },
+            {
+                "duration": "84 Months",
+                "rate": "6.5%"
+            }
+        ]
+    },
+    {
+        "_id": "6",
+        "title": "Tech Equipment Financing",
+        "category": "Business",
+        "interestRate": 9.0,
+        "maxAmount": 15000,
+        "description": "Upgrade your tech infrastructure. Get the latest laptops, servers, or software licenses with our specialized Tech Equipment Financing.",
+        "image": "https://images.unsplash.com/photo-1588508065123-287b28e013da?q=80&w=1854&auto=format&fit=crop",
+        "requirements": [
+            "Equipment Quotation",
+            "Business ID",
+            "Bank Statement (3 months)"
+        ],
+        "emiPlans": [
+            {
+                "duration": "12 Months",
+                "rate": "9.0%"
+            },
+            {
+                "duration": "24 Months",
+                "rate": "9.5%"
+            }
+        ]
+    }
+]

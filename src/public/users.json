@@ -1,0 +1,67 @@
+[
+  {
+    "_id": "1",
+    "name": "Super Admin",
+    "email": "superadmin@loanlink.com",
+    "role": "admin",
+    "isSuspended": false,
+    "photoURL": "https://ui-avatars.com/api/?name=Super+Admin&background=ff6b6b&color=fff",
+    "createdAt": "2024-01-01T00:00:00.000Z"
+  },
+  {
+    "_id": "2",
+    "name": "Admin User",
+    "email": "admin@loanlink.com",
+    "role": "admin",
+    "isSuspended": false,
+    "photoURL": "https://ui-avatars.com/api/?name=Admin+User&background=4ecdc4&color=fff",
+    "createdAt": "2024-01-15T00:00:00.000Z"
+  },
+  {
+    "_id": "3",
+    "name": "Manager One",
+    "email": "manager1@loanlink.com",
+    "role": "manager",
+    "isSuspended": false,
+    "photoURL": "https://ui-avatars.com/api/?name=Manager+One&background=45b7d1&color=fff",
+    "createdAt": "2024-01-20T00:00:00.000Z"
+  },
+  {
+    "_id": "4",
+    "name": "Manager Two",
+    "email": "manager2@loanlink.com",
+    "role": "manager",
+    "isSuspended": false,
+    "photoURL": "https://ui-avatars.com/api/?name=Manager+Two&background=f9ca24&color=fff",
+    "createdAt": "2024-01-25T00:00:00.000Z"
+  },
+  {
+    "_id": "5",
+    "name": "John Borrower",
+    "email": "borrower1@loanlink.com",
+    "role": "borrower",
+    "isSuspended": false,
+    "photoURL": "https://ui-avatars.com/api/?name=John+Borrower&background=a29bfe&color=fff",
+    "createdAt": "2024-02-01T00:00:00.000Z"
+  },
+  {
+    "_id": "6",
+    "name": "Jane Borrower",
+    "email": "borrower2@loanlink.com",
+    "role": "borrower",
+    "isSuspended": false,
+    "photoURL": "https://ui-avatars.com/api/?name=Jane+Borrower&background=fd79a8&color=fff",
+    "createdAt": "2024-02-05T00:00:00.000Z"
+  },
+  {
+    "_id": "7",
+    "name": "Suspended User",
+    "email": "suspended@example.com",
+    "role": "borrower",
+    "isSuspended": true,
+    "suspendReason": "Policy Violation",
+    "suspendFeedback": "Multiple policy violations detected",
+    "photoURL": "https://ui-avatars.com/api/?name=Suspended+User&background=e17055&color=fff",
+    "createdAt": "2024-02-10T00:00:00.000Z"
+  }
+]
