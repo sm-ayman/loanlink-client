@@ -36,7 +36,10 @@ const AddLoan = () => {
             }
         } catch (error) {
             console.error("Failed to add loan:", error);
-            toast.error(error.response?.data?.message || "Failed to add loan");
+            const errorMsg = error.response?.data?.errors 
+                ? error.response.data.errors.map(e => e.message).join(' | ')
+                : error.response?.data?.message || "Failed to add loan";
+            toast.error(errorMsg);
         } finally {
             setIsSubmitting(false);
         }
