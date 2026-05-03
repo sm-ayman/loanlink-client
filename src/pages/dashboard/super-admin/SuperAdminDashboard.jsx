@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
-import { FaUsers, FaMoneyBillWave, FaServer, FaExclamationTriangle } from "react-icons/fa";
+import { FaUsers, FaMoneyBillWave, FaServer, FaExclamationTriangle, FaChartPie } from "react-icons/fa";
 import { userAPI, paymentAPI } from "../../../utils/api";
 import toast from "react-hot-toast";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { Helmet } from "react-helmet-async";
 
 const SuperAdminDashboard = () => {
     const [stats, setStats] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [chartData, setChartData] = useState([]);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -50,6 +53,13 @@ const SuperAdminDashboard = () => {
                             color: "bg-success/10"
                         }
                     ]);
+
+                    // Prepare chart data
+                    setChartData([
+                        { name: 'Borrowers', value: uStats.roleBreakdown?.borrowers || 0 },
+                        { name: 'Managers', value: uStats.roleBreakdown?.managers || 0 },
+                        { name: 'Admins', value: uStats.roleBreakdown?.admins || 0 }
+                    ]);
                 }
             } catch (err) {
                 console.error("Error fetching stats:", err);
@@ -62,10 +72,15 @@ const SuperAdminDashboard = () => {
         fetchStats();
     }, []);
 
+    const COLORS = ['#10B981', '#3B82F6', '#F59E0B'];
+
     if (loading) return <div className="flex justify-center items-center min-h-screen"><span className="loading loading-spinner loading-lg text-primary"></span></div>;
 
     return (
         <div className="p-6">
+            <Helmet>
+                <title>Super Admin Dashboard | LoanLink</title>
+            </Helmet>
             <h1 className="text-3xl font-bold mb-6 text-gray-800">Super Admin Dashboard</h1>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -89,11 +104,41 @@ const SuperAdminDashboard = () => {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Recent Activity Placeholder */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                {/* User Distribution Chart */}
+                <div className="card bg-base-100 shadow-xl border border-gray-100 lg:col-span-1">
+                    <div className="card-body">
+                        <h2 className="card-title mb-4 flex items-center gap-2 text-lg">
+                            <FaChartPie className="text-primary" /> User Distribution
+                        </h2>
+                        <div className="h-64">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <PieChart>
+                                    <Pie
+                                        data={chartData}
+                                        cx="50%"
+                                        cy="50%"
+                                        innerRadius={60}
+                                        outerRadius={80}
+                                        paddingAngle={5}
+                                        dataKey="value"
+                                    >
+                                        {chartData.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                    <Legend verticalAlign="bottom" height={36}/>
+                                </PieChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Recent Activity */}
                 <div className="card bg-base-100 shadow-xl border border-gray-100">
                     <div className="card-body">
-                        <h2 className="card-title mb-4">Recent System Activity</h2>
+                        <h2 className="card-title mb-4 text-lg">Recent System Activity</h2>
                         <ul className="steps steps-vertical">
                             <li className="step step-primary">New admin account created</li>
                             <li className="step step-primary">Database backup completed</li>
@@ -103,15 +148,15 @@ const SuperAdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Quick Actions Placeholder */}
+                {/* Quick Actions */}
                 <div className="card bg-base-100 shadow-xl border border-gray-100">
                     <div className="card-body">
-                         <h2 className="card-title mb-4">Quick Actions</h2>
+                         <h2 className="card-title mb-4 text-lg">Quick Actions</h2>
                          <div className="grid grid-cols-2 gap-4">
-                            <button className="btn btn-outline btn-primary">Add New Admin</button>
-                            <button className="btn btn-outline btn-secondary">View Audit Logs</button>
-                            <button className="btn btn-outline btn-accent">System Settings</button>
-                            <button className="btn btn-outline">Generate Report</button>
+                            <button className="btn btn-outline btn-primary btn-sm">Add Admin</button>
+                            <button className="btn btn-outline btn-secondary btn-sm">Audit Logs</button>
+                            <button className="btn btn-outline btn-accent btn-sm">Settings</button>
+                            <button className="btn btn-outline btn-sm">Report</button>
                          </div>
                     </div>
                 </div>
