@@ -216,6 +216,12 @@ export const applicationAPI = {
     const response = await api.get('/applications/stats');
     return response.data;
   },
+
+  // Get recent applications
+  getRecentApplications: async () => {
+    const response = await api.get('/applications/recent');
+    return response.data;
+  },
 };
 
 // Payment API calls
