@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import SectionTitle from '../shared/SectionTitle';
 import { Link } from 'react-router-dom';
-import { loanAPI } from '../../../utils/api';
+import { loanAPI } from '../../utils/api';
 
 const AvailableLoans = () => {
     const [loans, setLoans] = useState([]);
