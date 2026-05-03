@@ -55,7 +55,7 @@ const Navbar = () => {
   );
 
   return (
-    <div className="navbar bg-base-100/95 backdrop-blur-sm shadow-sm fixed z-50 max-w-screen-2xl mx-auto transition-all duration-300">
+    <div className="navbar bg-base-100/95 backdrop-blur-sm shadow-sm fixed z-50 max-w-screen-2xl mx-auto transition-all duration-300 min-h-[120px]">
       <div className="navbar-start">
         <div className="dropdown">
           <label tabIndex={0} className="btn btn-ghost lg:hidden">
@@ -81,8 +81,8 @@ const Navbar = () => {
             {navOptions}
           </ul>
         </div>
-        <Link to="/" className="btn btn-ghost normal-case text-xl text-primary font-bold px-0 hover:bg-transparent">
-          <img src="/logo.png" alt="LoanLink Logo" className="h-16 w-auto" />
+        <Link to="/" className="btn btn-ghost normal-case text-xl text-primary font-bold px-0 hover:bg-transparent h-auto py-2">
+          <img src="/logo.png" alt="LoanLink Logo" className="h-24 w-auto" />
         </Link>
       </div>
       <div className="navbar-center hidden lg:flex">
