@@ -33,6 +33,22 @@ const ManageLoans = () => {
     }
   });
 
+  // Duplicate loan mutation
+  const duplicateMutation = useMutation({
+    mutationFn: (loanId) => loanAPI.duplicateLoan(loanId),
+    onSuccess: () => {
+      toast.success("Loan duplicated successfully!");
+      queryClient.invalidateQueries(['manager-loans']);
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to duplicate loan");
+    }
+  });
+
+  const handleDuplicate = (loanId) => {
+    duplicateMutation.mutate(loanId);
+  };
+
   // Filter loans based on search and category
   const filteredLoans = loansData?.data?.loans?.filter(loan => {
     const matchesSearch = !searchTerm ||
@@ -261,6 +277,14 @@ const ManageLoans = () => {
                   >
                     <FaEdit />
                     Edit
+                  </button>
+                  <button
+                    onClick={() => handleDuplicate(loan._id)}
+                    className="btn btn-accent btn-sm gap-1"
+                    disabled={duplicateMutation.isPending}
+                  >
+                    <FaPlus />
+                    Duplicate
                   </button>
                   <button
                     onClick={() => handleDelete(loan)}
