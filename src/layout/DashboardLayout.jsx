@@ -148,7 +148,7 @@ const DashboardLayout = () => {
                     {/* Sidebar content here */}
                     <div className="mb-6 px-4">
                         <Link to="/" className="font-bold text-primary flex items-center">
-                             <img src="/logo.png" className="h-24 w-auto"/>
+                             <img src="/logo.png" className="h-24 w-auto logo-blend"/>
                         </Link>
                         <div className="mt-2 flex flex-col gap-1">
                             <div className="badge badge-secondary uppercase font-bold px-4 py-3">{role}</div>

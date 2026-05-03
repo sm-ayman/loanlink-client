@@ -1,3 +1,12 @@
 @import "tailwindcss";
 
 @plugin "daisyui";
+
+.logo-blend {
+  mix-blend-mode: multiply;
+}
+
+[data-theme='night'] .logo-blend {
+  mix-blend-mode: normal;
+  filter: brightness(1.2);
+}
