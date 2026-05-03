@@ -83,7 +83,6 @@ const Navbar = () => {
         </div>
         <Link to="/" className="btn btn-ghost normal-case text-xl text-primary font-bold px-0 hover:bg-transparent">
           <img src="/logo.png" alt="LoanLink Logo" className="h-10 w-auto" />
-          <span className="ml-1">LoanLink</span>
         </Link>
       </div>
       <div className="navbar-center hidden lg:flex">
