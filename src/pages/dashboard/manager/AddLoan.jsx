@@ -1,31 +1,45 @@
 import { useForm } from "react-hook-form";
-// import useAxiosSecure from "../../../hooks/useAxiosSecure";
+import { useState } from "react";
+import { loanAPI } from "../../../utils/api";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 
 const AddLoan = () => {
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
-    // const axiosSecure = useAxiosSecure();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const navigate = useNavigate();
 
-    const onSubmit = (data) => {
-        // TODO: Upload image to imgbb/cloudinary and get URL
-        // const imageFile = { image: data.image[0] }
-        // const res = await axiosPublic.post(image_hosting_api, imageFile, ...)
-        
-        const loanData = {
-            title: data.title,
-            category: data.category,
-            interestRate: data.interestRate,
-            maxAmount: parseFloat(data.maxAmount),
-            description: data.description,
-            // image: res.data.data.display_url
-            image: "https://via.placeholder.com/300", // Placeholder
-            showOnHome: data.showOnHome === 'true'
+    const onSubmit = async (data) => {
+        try {
+            setIsSubmitting(true);
+            
+            // Format data to match backend schema expectations
+            const loanData = {
+                title: data.title,
+                category: data.category.toLowerCase(), // Backend expects lowercase enum
+                interestRate: parseFloat(data.interestRate),
+                maxLoanLimit: parseFloat(data.maxAmount), // Backend expects maxLoanLimit, not maxAmount
+                description: data.description,
+                images: ["https://via.placeholder.com/600x400?text=" + encodeURIComponent(data.title)], // Placeholder image
+                showOnHome: data.showOnHome === 'true',
+                // Optional fields with defaults
+                requiredDocuments: ["Valid ID", "Proof of Income", "Proof of Address"],
+                emiPlans: ["3 Months", "6 Months", "12 Months"]
+            };
+
+            const response = await loanAPI.createLoan(loanData);
+            
+            if (response.success) {
+                toast.success("Loan Added Successfully!");
+                reset();
+                navigate('/dashboard/manage-loans');
+            }
+        } catch (error) {
+            console.error("Failed to add loan:", error);
+            toast.error(error.response?.data?.message || "Failed to add loan");
+        } finally {
+            setIsSubmitting(false);
         }
-
-        console.log(loanData);
-        // axiosSecure.post('/loans', loanData) ...
-        toast.success("Loan Added Successfully (Mock)");
-        reset();
     };
 
     return (
@@ -105,7 +119,15 @@ const AddLoan = () => {
                     </div>
 
                     <div className="form-control mt-6">
-                        <button className="btn btn-primary">Add Loan</button>
+                        <button 
+                            type="submit" 
+                            className="btn btn-primary" 
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <><span className="loading loading-spinner"></span> Adding...</>
+                            ) : "Add Loan"}
+                        </button>
                     </div>
                 </form>
             </div>

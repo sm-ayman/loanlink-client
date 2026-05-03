@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { FaTrash, FaUserCheck, FaUserShield, FaBan, FaSearch, FaFilter, FaUser, FaCrown, FaCog } from "react-icons/fa";
+import { FaTrash, FaUserCheck, FaUserShield, FaBan, FaSearch, FaUser } from "react-icons/fa";
+import { userAPI } from "../../../utils/api";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 
@@ -10,48 +11,34 @@ const ManageUsers = () => {
     const [limit] = useState(10);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [totalUsers, setTotalUsers] = useState(0);
 
-    // Load users data
-    useEffect(() => {
-        const loadUsers = async () => {
-            try {
-                const response = await fetch('/users.json');
-                const usersData = await response.json();
-                setUsers(usersData);
-            } catch (error) {
-                console.error('Error loading users:', error);
-                toast.error('Failed to load users data');
-            } finally {
-                setLoading(false);
+    const loadUsers = async () => {
+        try {
+            setLoading(true);
+            const params = {
+                page: currentPage,
+                limit: limit,
+                role: selectedRole,
+                search: searchTerm
+            };
+            const response = await userAPI.getAllUsers(params);
+            if (response.success) {
+                setUsers(response.data.users);
+                setTotalUsers(response.data.pagination.totalUsers);
             }
-        };
-        loadUsers();
-    }, []);
-
-    // Update user role (simulate API call)
-    const updateUserRole = (userId, newRole) => {
-        setUsers(prevUsers =>
-            prevUsers.map(user =>
-                user._id === userId ? { ...user, role: newRole } : user
-            )
-        );
-        toast.success("User role updated successfully!");
+        } catch (error) {
+            console.error('Error loading users:', error);
+            toast.error('Failed to load users');
+        } finally {
+            setLoading(false);
+        }
     };
 
-    // Suspend/unsuspend user (simulate API call)
-    const updateUserSuspension = (userId, suspendData) => {
-        setUsers(prevUsers =>
-            prevUsers.map(user =>
-                user._id === userId ? {
-                    ...user,
-                    isSuspended: suspendData.isSuspended,
-                    suspendReason: suspendData.suspendReason || user.suspendReason,
-                    suspendFeedback: suspendData.suspendFeedback || user.suspendFeedback
-                } : user
-            )
-        );
-        toast.success(`User ${suspendData.isSuspended ? 'suspended' : 'unsuspended'} successfully!`);
-    };
+    useEffect(() => {
+        const timeoutId = setTimeout(loadUsers, 500); // Debounce search
+        return () => clearTimeout(timeoutId);
+    }, [currentPage, searchTerm, selectedRole]);
 
     const handleRoleChange = async (user, newRole) => {
         const roleNames = {
@@ -62,23 +49,25 @@ const ManageUsers = () => {
 
         const result = await Swal.fire({
             title: `Change Role to ${roleNames[newRole]}?`,
-            html: `
-                <div class="text-left">
-                    <p><strong>User:</strong> ${user.name} (${user.email})</p>
-                    <p><strong>Current Role:</strong> ${roleNames[user.role] || user.role}</p>
-                    <p><strong>New Role:</strong> ${roleNames[newRole]}</p>
-                </div>
-            `,
+            text: `Are you sure you want to change the role of ${user.email} to ${roleNames[newRole]}?`,
             icon: "question",
             showCancelButton: true,
             confirmButtonColor: "#10B981",
             cancelButtonColor: "#6B7280",
-            confirmButtonText: `Yes, Make ${roleNames[newRole]}`,
+            confirmButtonText: "Yes, Update",
             cancelButtonText: "Cancel"
         });
 
         if (result.isConfirmed) {
-            updateUserRole(user._id, newRole);
+            try {
+                const response = await userAPI.updateUserRole(user._id, { role: newRole });
+                if (response.success) {
+                    toast.success("User role updated successfully!");
+                    loadUsers();
+                }
+            } catch (err) {
+                toast.error(err.response?.data?.message || "Failed to update role");
+            }
         }
     };
 
@@ -98,7 +87,7 @@ const ManageUsers = () => {
                 </div>
                 <div>
                     <label class="block text-sm font-medium mb-2">Additional Feedback</label>
-                    <textarea id="suspend-feedback" class="swal2-textarea w-full p-2 border rounded" placeholder="Provide additional details about the suspension..." rows="3"></textarea>
+                    <textarea id="suspend-feedback" class="swal2-textarea w-full p-2 border rounded" placeholder="Provide additional details..." rows="3"></textarea>
                 </div>
             </div>
         `;
@@ -133,33 +122,25 @@ const ManageUsers = () => {
         });
 
         if (result.isConfirmed) {
-            const suspendData = {
-                isSuspended: !user.isSuspended,
-                suspendReason: result.value?.reason || '',
-                suspendFeedback: result.value?.feedback || ''
-            };
+            try {
+                const suspendData = {
+                    isSuspended: !user.isSuspended,
+                    suspendReason: result.value?.reason || '',
+                    suspendFeedback: result.value?.feedback || ''
+                };
 
-            updateUserSuspension(user._id, suspendData);
+                const response = await userAPI.suspendUser(user._id, suspendData);
+                if (response.success) {
+                    toast.success(`User ${suspendData.isSuspended ? 'suspended' : 'unsuspended'} successfully!`);
+                    loadUsers();
+                }
+            } catch (err) {
+                toast.error(err.response?.data?.message || "Failed to update suspension status");
+            }
         }
     };
 
-    // Filter users based on search and role
-    const filteredUsers = users.filter(user => {
-        const matchesSearch = !searchTerm ||
-            user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            user.email.toLowerCase().includes(searchTerm.toLowerCase());
-
-        const matchesRole = !selectedRole || user.role === selectedRole;
-
-        return matchesSearch && matchesRole;
-    });
-
-    // Pagination logic
-    const totalUsers = filteredUsers.length;
     const totalPages = Math.ceil(totalUsers / limit);
-    const startIndex = (currentPage - 1) * limit;
-    const paginatedUsers = filteredUsers.slice(startIndex, startIndex + limit);
-
     const pagination = {
         currentPage,
         totalPages,
@@ -256,7 +237,7 @@ const ManageUsers = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                {paginatedUsers.map((user, index) => (
+                                {users.map((user, index) => (
                                     <tr key={user._id} className="hover:bg-base-50 transition-colors">
                                         <th>{(currentPage - 1) * limit + index + 1}</th>
                                         <td>

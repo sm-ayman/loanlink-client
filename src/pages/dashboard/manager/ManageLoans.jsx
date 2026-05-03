@@ -4,6 +4,8 @@ import { loanAPI } from "../../../utils/api";
 import toast from "react-hot-toast";
 import { FaEdit, FaTrash, FaEye, FaSearch, FaPlus, FaImage, FaFileAlt, FaPercent } from "react-icons/fa";
 import Swal from "sweetalert2";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 
 const ManageLoans = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -11,6 +13,7 @@ const ManageLoans = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingLoan, setEditingLoan] = useState(null);
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // Fetch manager's loans
   const { data: loansData, isLoading, error, refetch } = useQuery({
@@ -140,8 +143,7 @@ const ManageLoans = () => {
         </div>
         <button
           onClick={() => {
-            setEditingLoan(null);
-            setShowAddModal(true);
+            navigate('/dashboard/add-loan');
           }}
           className="btn btn-primary gap-2"
         >
@@ -197,8 +199,7 @@ const ManageLoans = () => {
           {loansData?.data?.loans?.length === 0 && (
             <button
               onClick={() => {
-                setEditingLoan(null);
-                setShowAddModal(true);
+                navigate('/dashboard/add-loan');
               }}
               className="btn btn-primary"
             >
@@ -276,37 +277,106 @@ const ManageLoans = () => {
         </div>
       )}
 
-      {/* Add/Edit Loan Modal would go here - for now just showing placeholder */}
-      {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-base-100 rounded-lg shadow-2xl w-full max-w-md p-6">
-            <h2 className="text-2xl font-bold mb-4">
-              {editingLoan ? 'Edit Loan' : 'Add New Loan'}
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Loan creation form would be implemented here. For now, use the "Add Loan" page.
-            </p>
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowAddModal(false)}
-                className="btn btn-ghost"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => {
-                  setShowAddModal(false);
-                  toast.info("Redirecting to Add Loan page...");
-                  // Would redirect to /dashboard/add-loan
-                }}
-                className="btn btn-primary"
-              >
-                Go to Add Loan Page
-              </button>
+      {/* Edit Loan Modal */}
+      {showAddModal && editingLoan && (
+        <EditLoanModal 
+            loan={editingLoan} 
+            onClose={() => {
+                setShowAddModal(false);
+                setEditingLoan(null);
+            }} 
+            onSuccess={() => {
+                queryClient.invalidateQueries(['manager-loans']);
+            }} 
+        />
+      )}
+    </div>
+  );
+};
+
+const EditLoanModal = ({ loan, onClose, onSuccess }) => {
+  const { register, handleSubmit } = useForm({
+    defaultValues: {
+      title: loan.title,
+      category: loan.category.charAt(0).toUpperCase() + loan.category.slice(1),
+      interestRate: loan.interestRate,
+      maxAmount: loan.maxLoanLimit,
+      description: loan.description,
+      showOnHome: loan.showOnHome
+    }
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: (data) => loanAPI.updateLoan(loan._id, data),
+    onSuccess: () => {
+      toast.success("Loan updated successfully!");
+      onSuccess();
+      onClose();
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to update loan");
+    }
+  });
+
+  const onSubmit = (data) => {
+    const loanData = {
+      title: data.title,
+      category: data.category.toLowerCase(),
+      interestRate: parseFloat(data.interestRate),
+      maxLoanLimit: parseFloat(data.maxAmount),
+      description: data.description,
+      showOnHome: data.showOnHome === 'true' || data.showOnHome === true
+    };
+    updateMutation.mutate(loanData);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] p-4 overflow-y-auto">
+      <div className="bg-base-100 rounded-lg shadow-2xl w-full max-w-2xl p-6 my-8 max-h-[90vh] overflow-y-auto">
+        <h2 className="text-2xl font-bold mb-4">Edit Loan</h2>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="form-control">
+              <label className="label"><span className="label-text">Title</span></label>
+              <input type="text" className="input input-bordered w-full" {...register("title", { required: true })} />
+            </div>
+            <div className="form-control">
+              <label className="label"><span className="label-text">Category</span></label>
+              <select className="select select-bordered w-full" {...register("category", { required: true })}>
+                <option value="Personal">Personal</option>
+                <option value="Business">Business</option>
+                <option value="Education">Education</option>
+                <option value="Home">Home</option>
+                <option value="Vehicle">Vehicle</option>
+              </select>
+            </div>
+            <div className="form-control">
+              <label className="label"><span className="label-text">Interest Rate (%)</span></label>
+              <input type="number" step="0.01" className="input input-bordered w-full" {...register("interestRate", { required: true })} />
+            </div>
+            <div className="form-control">
+              <label className="label"><span className="label-text">Max Limit ($)</span></label>
+              <input type="number" className="input input-bordered w-full" {...register("maxAmount", { required: true })} />
             </div>
           </div>
-        </div>
-      )}
+          <div className="form-control mt-4">
+            <label className="label"><span className="label-text">Description</span></label>
+            <textarea className="textarea textarea-bordered h-24" {...register("description", { required: true })}></textarea>
+          </div>
+          <div className="form-control mt-4 w-fit">
+            <label className="cursor-pointer label gap-4">
+              <span className="label-text">Show on Home Page?</span>
+              <input type="checkbox" className="toggle toggle-primary" {...register("showOnHome")} />
+            </label>
+          </div>
+          <div className="flex justify-end gap-2 mt-6">
+            <button type="button" onClick={onClose} className="btn btn-ghost">Cancel</button>
+            <button type="submit" className="btn btn-primary" disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 };

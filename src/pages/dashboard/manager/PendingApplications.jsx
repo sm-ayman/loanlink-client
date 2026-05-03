@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { FaEye, FaCheck, FaTimes, FaCalendar, FaUser, FaMoneyBillWave } from "react-icons/fa";
+import { applicationAPI } from "../../../utils/api";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 
@@ -8,59 +9,36 @@ const PendingApplications = () => {
   const [limit] = useState(10);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalApplications, setTotalApplications] = useState(0);
 
-  // Load applications data
-  useEffect(() => {
-    const loadApplications = async () => {
-      try {
-        const response = await fetch('/applications.json');
-        const applicationsData = await response.json();
-        setApplications(applicationsData);
-      } catch (error) {
-        console.error('Error loading applications:', error);
-        toast.error('Failed to load applications data');
-      } finally {
-        setLoading(false);
+  const loadApplications = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: currentPage,
+        limit: limit
+      };
+      const response = await applicationAPI.getPendingApplications(params);
+      if (response.success) {
+        setApplications(response.data.applications);
+        setTotalApplications(response.data.pagination.totalApplications);
       }
-    };
+    } catch (error) {
+      console.error('Error loading applications:', error);
+      toast.error('Failed to load applications');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadApplications();
-  }, []);
-
-  // Approve application (simulate API call)
-  const approveApplication = (applicationId) => {
-    setApplications(prevApps =>
-      prevApps.map(app =>
-        app._id === applicationId
-          ? { ...app, status: 'approved', approvedAt: new Date().toISOString() }
-          : app
-      )
-    );
-    toast.success("Application approved successfully!");
-  };
-
-  // Reject application (simulate API call)
-  const rejectApplication = (applicationId) => {
-    setApplications(prevApps =>
-      prevApps.map(app =>
-        app._id === applicationId
-          ? { ...app, status: 'rejected', rejectedAt: new Date().toISOString() }
-          : app
-      )
-    );
-    toast.success("Application rejected successfully!");
-  };
+  }, [currentPage]);
 
   const handleApprove = async (application) => {
     const result = await Swal.fire({
       title: 'Approve Application?',
-      html: `
-        <div class="text-left">
-          <p><strong>Applicant:</strong> ${application.userId.name} (${application.userId.email})</p>
-          <p><strong>Loan:</strong> ${application.loanId.title}</p>
-          <p><strong>Amount:</strong> $${application.loanAmount}</p>
-          <p><strong>Reason:</strong> ${application.reasonForLoan}</p>
-        </div>
-      `,
+      text: `Are you sure you want to approve the application for ${application.userEmail}?`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#10B981',
@@ -70,36 +48,40 @@ const PendingApplications = () => {
     });
 
     if (result.isConfirmed) {
-      approveApplication(application._id);
+      try {
+        const response = await applicationAPI.approveApplication(application._id);
+        if (response.success) {
+          toast.success("Application approved successfully!");
+          loadApplications();
+        }
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to approve application");
+      }
     }
   };
 
   const handleReject = async (application) => {
     const result = await Swal.fire({
       title: 'Reject Application?',
-      html: `
-        <div class="text-left">
-          <p><strong>Applicant:</strong> ${application.userId.name} (${application.userId.email})</p>
-          <p><strong>Loan:</strong> ${application.loanId.title}</p>
-          <p><strong>Amount:</strong> $${application.loanAmount}</p>
-        </div>
-        <div class="mt-4">
-          <textarea id="rejection-reason" class="swal2-textarea" placeholder="Reason for rejection (optional)"></textarea>
-        </div>
-      `,
+      text: `Are you sure you want to reject the application for ${application.userEmail}?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#EF4444',
       cancelButtonColor: '#6B7280',
       confirmButtonText: 'Reject Application',
-      cancelButtonText: 'Cancel',
-      preConfirm: () => {
-        return document.getElementById('rejection-reason').value;
-      }
+      cancelButtonText: 'Cancel'
     });
 
     if (result.isConfirmed) {
-      rejectApplication(application._id);
+      try {
+        const response = await applicationAPI.rejectApplication(application._id);
+        if (response.success) {
+          toast.success("Application rejected successfully!");
+          loadApplications();
+        }
+      } catch (err) {
+        toast.error(err.response?.data?.message || "Failed to reject application");
+      }
     }
   };
 
@@ -111,23 +93,22 @@ const PendingApplications = () => {
           <div class="bg-gray-50 p-4 rounded-lg">
             <h3 class="font-bold text-lg mb-3">Applicant Information</h3>
             <p><strong>Name:</strong> ${application.firstName} ${application.lastName}</p>
-            <p><strong>Email:</strong> ${application.userId.email}</p>
+            <p><strong>Email:</strong> ${application.userId?.email || 'N/A'}</p>
             <p><strong>Contact:</strong> ${application.contactNumber}</p>
             <p><strong>National ID:</strong> ${application.nationalId}</p>
           </div>
 
           <div class="bg-gray-50 p-4 rounded-lg">
             <h3 class="font-bold text-lg mb-3">Loan Information</h3>
-            <p><strong>Loan:</strong> ${application.loanId.title}</p>
-            <p><strong>Category:</strong> ${application.loanId.category}</p>
-            <p><strong>Interest Rate:</strong> ${application.loanId.interestRate}%</p>
-            <p><strong>Requested Amount:</strong> $${application.loanAmount}</p>
+            <p><strong>Loan:</strong> ${application.loanId?.title || 'N/A'}</p>
+            <p><strong>Category:</strong> ${application.loanId?.category || 'N/A'}</p>
+            <p><strong>Requested Amount:</strong> $${application.loanAmount?.toLocaleString()}</p>
           </div>
 
           <div class="bg-gray-50 p-4 rounded-lg">
             <h3 class="font-bold text-lg mb-3">Financial Information</h3>
             <p><strong>Income Source:</strong> ${application.incomeSource}</p>
-            <p><strong>Monthly Income:</strong> $${application.monthlyIncome}</p>
+            <p><strong>Monthly Income:</strong> $${application.monthlyIncome?.toLocaleString()}</p>
           </div>
 
           <div class="bg-gray-50 p-4 rounded-lg">
@@ -145,15 +126,7 @@ const PendingApplications = () => {
     });
   };
 
-  // Filter pending applications
-  const pendingApplications = applications.filter(app => app.status === 'pending');
-
-  // Pagination logic
-  const totalApplications = pendingApplications.length;
   const totalPages = Math.ceil(totalApplications / limit);
-  const startIndex = (currentPage - 1) * limit;
-  const paginatedApplications = pendingApplications.slice(startIndex, startIndex + limit);
-
   const pagination = {
     currentPage,
     totalPages,
@@ -211,7 +184,7 @@ const PendingApplications = () => {
                   </tr>
                 </thead>
                 <tbody>
-                                {paginatedApplications.map((application, index) => (
+                                {applications.map((application, index) => (
                     <tr key={application._id} className="hover">
                       <td className="font-medium">
                         {(currentPage - 1) * limit + index + 1}

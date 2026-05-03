@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { FaEye, FaCalendar, FaUser, FaMoneyBillWave, FaCheckCircle } from "react-icons/fa";
+import { applicationAPI } from "../../../utils/api";
+import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 
 const ApprovedApplications = () => {
@@ -7,22 +9,31 @@ const ApprovedApplications = () => {
   const [limit] = useState(10);
   const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [totalApplications, setTotalApplications] = useState(0);
 
-  // Load applications data
-  useEffect(() => {
-    const loadApplications = async () => {
-      try {
-        const response = await fetch('/applications.json');
-        const applicationsData = await response.json();
-        setApplications(applicationsData);
-      } catch (error) {
-        console.error('Error loading applications:', error);
-      } finally {
-        setLoading(false);
+  const loadApplications = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: currentPage,
+        limit: limit
+      };
+      const response = await applicationAPI.getApprovedApplications(params);
+      if (response.success) {
+        setApplications(response.data.applications);
+        setTotalApplications(response.data.pagination.totalApplications);
       }
-    };
+    } catch (error) {
+      console.error('Error loading applications:', error);
+      toast.error('Failed to load applications');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     loadApplications();
-  }, []);
+  }, [currentPage]);
 
   const handleViewDetails = (application) => {
     Swal.fire({
@@ -40,23 +51,22 @@ const ApprovedApplications = () => {
           <div class="bg-gray-50 p-4 rounded-lg">
             <h3 class="font-bold text-lg mb-3">Applicant Information</h3>
             <p><strong>Name:</strong> ${application.firstName} ${application.lastName}</p>
-            <p><strong>Email:</strong> ${application.userId.email}</p>
+            <p><strong>Email:</strong> ${application.userId?.email || 'N/A'}</p>
             <p><strong>Contact:</strong> ${application.contactNumber}</p>
             <p><strong>National ID:</strong> ${application.nationalId}</p>
           </div>
 
           <div class="bg-gray-50 p-4 rounded-lg">
             <h3 class="font-bold text-lg mb-3">Loan Information</h3>
-            <p><strong>Loan:</strong> ${application.loanId.title}</p>
-            <p><strong>Category:</strong> ${application.loanId.category}</p>
-            <p><strong>Interest Rate:</strong> ${application.loanId.interestRate}%</p>
-            <p><strong>Approved Amount:</strong> $${application.loanAmount}</p>
+            <p><strong>Loan:</strong> ${application.loanId?.title || 'N/A'}</p>
+            <p><strong>Category:</strong> ${application.loanId?.category || 'N/A'}</p>
+            <p><strong>Approved Amount:</strong> $${application.loanAmount?.toLocaleString()}</p>
           </div>
 
           <div class="bg-gray-50 p-4 rounded-lg">
             <h3 class="font-bold text-lg mb-3">Financial Information</h3>
             <p><strong>Income Source:</strong> ${application.incomeSource}</p>
-            <p><strong>Monthly Income:</strong> $${application.monthlyIncome}</p>
+            <p><strong>Monthly Income:</strong> $${application.monthlyIncome?.toLocaleString()}</p>
           </div>
 
           <div class="bg-gray-50 p-4 rounded-lg">
@@ -76,22 +86,11 @@ const ApprovedApplications = () => {
       `,
       width: '600px',
       showCloseButton: true,
-      showConfirmButton: false,
-      customClass: {
-        popup: 'swal-wide'
-      }
+      showConfirmButton: false
     });
   };
 
-  // Filter approved applications
-  const approvedApplications = applications.filter(app => app.status === 'approved');
-
-  // Pagination logic
-  const totalApplications = approvedApplications.length;
   const totalPages = Math.ceil(totalApplications / limit);
-  const startIndex = (currentPage - 1) * limit;
-  const paginatedApplications = approvedApplications.slice(startIndex, startIndex + limit);
-
   const pagination = {
     currentPage,
     totalPages,
@@ -150,7 +149,7 @@ const ApprovedApplications = () => {
                   </tr>
                 </thead>
                 <tbody>
-                                {paginatedApplications.map((application, index) => (
+                                {applications.map((application, index) => (
                     <tr key={application._id} className="hover">
                       <td className="font-medium">
                         {(currentPage - 1) * limit + index + 1}

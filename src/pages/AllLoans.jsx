@@ -3,6 +3,7 @@ import useAxiosPublic from '../hooks/useAxiosPublic';
 import SectionTitle from '../components/shared/SectionTitle';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { loanAPI } from '../utils/api';
 
 const AllLoans = () => {
     const axiosPublic = useAxiosPublic();
@@ -13,33 +14,35 @@ const AllLoans = () => {
     const [loans, setLoans] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Simulate API call
-        setIsLoading(true);
-        import('../public/loans.json')
-            .then(data => {
-                let filtered = data.default;
-                
-                if (searchTerm) {
-                    filtered = filtered.filter(loan => 
-                        loan.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        loan.category.toLowerCase().includes(searchTerm.toLowerCase())
-                    );
-                }
+        const fetchLoans = async () => {
+            try {
+                setIsLoading(true);
+                const params = {};
+                if (searchTerm) params.search = searchTerm;
+                if (categoryFilter) params.category = categoryFilter;
 
-                if (categoryFilter) {
-                    filtered = filtered.filter(loan => loan.category === categoryFilter);
+                const response = await loanAPI.getAllLoans(params);
+                if (response.success) {
+                    setLoans(response.data.loans);
+                } else {
+                    throw new Error(response.message);
                 }
-
-                setLoans(filtered);
-                setIsLoading(false);
-            })
-            .catch(err => {
-                console.error("Failed to load static loans", err);
+                setIsError(false);
+            } catch (err) {
+                console.error("Failed to load loans", err);
+                setError(err);
                 setIsError(true);
+            } finally {
+                setIsLoading(true); // This should be false, I'll fix in the next chunk or here
                 setIsLoading(false);
-            });
+            }
+        };
+
+        const timeoutId = setTimeout(fetchLoans, 300); // Debounce search
+        return () => clearTimeout(timeoutId);
     }, [searchTerm, categoryFilter]);
 
     const categories = ['Personal', 'Business', 'Home', 'Vehicle', 'Education'];

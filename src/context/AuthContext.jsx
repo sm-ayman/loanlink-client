@@ -83,16 +83,32 @@ const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password) => {
     setLoading(true);
-    // BACKDOOR FOR SUPER ADMIN (Bypass Firebase)
-    if (email === 'superadmin@loanlink.com' && password === 'admin123') {
+    // BACKDOOR FOR TEST ACCOUNTS (Bypass Firebase)
+    const testAccounts = {
+        'superadmin@loanlink.com': { uid: 'superadmin-123', name: 'Super Admin', role: 'admin' },
+        'admin@loanlink.com': { uid: 'admin-123', name: 'System Admin', role: 'admin' },
+        'manager1@loanlink.com': { uid: 'manager-123', name: 'Loan Manager 1', role: 'manager' },
+        'manager2@loanlink.com': { uid: 'manager-456', name: 'Loan Manager 2', role: 'manager' },
+        'borrower1@loanlink.com': { uid: 'borrower-123', name: 'John Borrower', role: 'borrower' },
+        'borrower2@loanlink.com': { uid: 'borrower-456', name: 'Jane Borrower', role: 'borrower' }
+    };
+
+    if (testAccounts[email] && password === (email.includes('admin') ? 'admin123' : email.includes('manager') ? 'manager123' : 'borrower123')) {
         return new Promise((resolve) => {
+            const acc = testAccounts[email];
             const fakeUser = {
-                uid: 'superadmin-123',
-                email: 'superadmin@loanlink.com',
-                displayName: 'Super Admin',
+                uid: acc.uid,
+                email: email,
+                displayName: acc.name,
                 emailVerified: true
             };
             setUser(fakeUser);
+            setBackendUser({
+                id: acc.uid,
+                name: acc.name,
+                email: email,
+                role: acc.role
+            });
             localStorage.setItem('fakeUser', JSON.stringify(fakeUser));
             setLoading(false);
             resolve({ user: fakeUser });

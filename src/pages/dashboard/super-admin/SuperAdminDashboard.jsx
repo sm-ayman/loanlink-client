@@ -1,37 +1,68 @@
+import { useState, useEffect } from "react";
 import { FaUsers, FaMoneyBillWave, FaServer, FaExclamationTriangle } from "react-icons/fa";
+import { userAPI, paymentAPI } from "../../../utils/api";
+import toast from "react-hot-toast";
 
 const SuperAdminDashboard = () => {
-    // Static data for demonstration
-    const stats = [
-        {
-            title: "Total Users",
-            value: "1,245",
-            icon: <FaUsers className="text-3xl text-primary" />,
-            desc: "Active users across all roles",
-            color: "bg-primary/10"
-        },
-        {
-            title: "Total Loans",
-            value: "$5.2M",
-            icon: <FaMoneyBillWave className="text-3xl text-secondary" />,
-            desc: "Total loan volume processed",
-            color: "bg-secondary/10"
-        },
-        {
-            title: "System Health",
-            value: "98%",
-            icon: <FaServer className="text-3xl text-success" />,
-            desc: "Server uptime in last 30 days",
-            color: "bg-success/10"
-        },
-        {
-            title: "Pending Issues",
-            value: "12",
-            icon: <FaExclamationTriangle className="text-3xl text-warning" />,
-            desc: "Reports requiring attention",
-            color: "bg-warning/10"
-        }
-    ];
+    const [stats, setStats] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                setLoading(true);
+                const [userStatsRes, paymentStatsRes] = await Promise.all([
+                    userAPI.getUserStats(),
+                    paymentAPI.getPaymentStats()
+                ]);
+
+                if (userStatsRes.success && paymentStatsRes.success) {
+                    const uStats = userStatsRes.data;
+                    const pStats = paymentStatsRes.data;
+
+                    setStats([
+                        {
+                            title: "Total Users",
+                            value: uStats.totalUsers?.toLocaleString() || "0",
+                            icon: <FaUsers className="text-3xl text-primary" />,
+                            desc: `B: ${uStats.roleBreakdown?.borrowers || 0}, M: ${uStats.roleBreakdown?.managers || 0}, A: ${uStats.roleBreakdown?.admins || 0}`,
+                            color: "bg-primary/10"
+                        },
+                        {
+                            title: "Total Revenue",
+                            value: `$${pStats.totalRevenue?.toLocaleString() || "0"}`,
+                            icon: <FaMoneyBillWave className="text-3xl text-secondary" />,
+                            desc: `From ${pStats.totalPayments || 0} applications`,
+                            color: "bg-secondary/10"
+                        },
+                        {
+                            title: "Suspended Users",
+                            value: uStats.suspendedUsers?.toString() || "0",
+                            icon: <FaExclamationTriangle className="text-3xl text-warning" />,
+                            desc: "Users currently restricted",
+                            color: "bg-warning/10"
+                        },
+                        {
+                            title: "Recent Regs",
+                            value: uStats.recentRegistrations?.toString() || "0",
+                            icon: <FaServer className="text-3xl text-success" />,
+                            desc: "Last 30 days",
+                            color: "bg-success/10"
+                        }
+                    ]);
+                }
+            } catch (err) {
+                console.error("Error fetching stats:", err);
+                toast.error("Failed to load dashboard statistics");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
+    if (loading) return <div className="flex justify-center items-center min-h-screen"><span className="loading loading-spinner loading-lg text-primary"></span></div>;
 
     return (
         <div className="p-6">
