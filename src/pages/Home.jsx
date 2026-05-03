@@ -2,10 +2,14 @@ import Hero from "../components/home/Hero";
 import AvailableLoans from "../components/home/AvailableLoans";
 import HowItWorks from "../components/home/HowItWorks";
 import CustomerFeedback from "../components/home/CustomerFeedback";
+import { Helmet } from "react-helmet-async";
 
 const Home = () => {
     return (
         <div className="min-h-screen">
+            <Helmet>
+                <title>LoanLink | Fast & Secure Microloans</title>
+            </Helmet>
             <Hero />
             <AvailableLoans />
             <HowItWorks />

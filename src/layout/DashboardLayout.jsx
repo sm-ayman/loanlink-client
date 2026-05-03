@@ -53,12 +53,12 @@ const DashboardLayout = () => {
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink to="/dashboard/pending-applications">
+                    <NavLink to="/dashboard/pending-loans">
                         <FaFileInvoiceDollar /> Pending Applications
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink to="/dashboard/approved-applications">
+                    <NavLink to="/dashboard/approved-loans">
                         <FaCheckCircle /> Approved Applications
                     </NavLink>
                 </li>
@@ -74,12 +74,12 @@ const DashboardLayout = () => {
                     </NavLink>
                 </li>
                 <li>
-                    <NavLink to="/dashboard/all-loans-admin">
+                    <NavLink to="/dashboard/all-loan">
                         <FaMoneyBillWave /> All Loans
                     </NavLink>
                 </li>
                  <li>
-                    <NavLink to="/dashboard/all-applications">
+                    <NavLink to="/dashboard/loan-applications">
                         <FaFileInvoiceDollar /> All Applications
                     </NavLink>
                 </li>

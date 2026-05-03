@@ -31,6 +31,13 @@ const AvailableLoans = () => {
         );
     }
 
+    const getImageUrl = (loan) => {
+        const img = loan.images?.[0] || loan.image;
+        if (!img) return "https://via.placeholder.com/400x250?text=Loan+Image";
+        if (img.startsWith('http')) return img;
+        return `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${img}`;
+    };
+
     return (
         <section className="my-16 max-w-screen-2xl mx-auto px-4">
             <SectionTitle heading="Available Loans" subHeading="Latest Opportunities" />
@@ -39,10 +46,10 @@ const AvailableLoans = () => {
                 {loans.map(loan => (
                     <div key={loan._id} className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300">
                         <figure className="h-48 overflow-hidden relative">
-                            <img src={loan.images?.[0] || "https://via.placeholder.com/400x250?text=Loan+Image"} alt={loan.title} className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" />
+                            <img src={getImageUrl(loan)} alt={loan.title} className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500" />
                         </figure>
                         <div className="card-body">
-                            <h2 className="card-title justify-between">
+                            <h2 className="card-title justify-between uppercase">
                                 {loan.title}
                                 <div className="badge badge-secondary">{loan.category}</div>
                             </h2>

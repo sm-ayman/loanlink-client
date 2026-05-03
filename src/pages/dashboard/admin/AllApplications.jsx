@@ -1,62 +1,215 @@
-import { FaFileAlt, FaClipboardCheck, FaRegCalendarAlt } from "react-icons/fa";
+import { useState, useEffect } from "react";
+import { FaFileAlt, FaEye, FaSearch, FaFilter, FaUser } from "react-icons/fa";
+import { applicationAPI } from "../../../utils/api";
+import toast from "react-hot-toast";
+import { Helmet } from "react-helmet-async";
 
 const AllApplications = () => {
-    // Mock applications data
-    const applications = [
-        { id: 101, applicant: "Sarah Connor", requestedAmount: "$12,000", income: "$45,000/yr", creditScore: 720, date: "2023-11-01" },
-        { id: 102, applicant: "Kyle Reese", requestedAmount: "$5,000", income: "$30,000/yr", creditScore: 650, date: "2023-11-02" },
-        { id: 103, applicant: "T-800", requestedAmount: "$100,000", income: "$0/yr", creditScore: 850, date: "2023-11-03" },
-    ];
+    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [statusFilter, setStatusFilter] = useState("");
+    const [selectedApp, setSelectedApp] = useState(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
+    const loadApplications = async () => {
+        try {
+            setLoading(true);
+            const params = { status: statusFilter };
+            const response = await applicationAPI.getAllApplications(params);
+            if (response.success) {
+                setApplications(response.data.applications);
+            }
+        } catch (error) {
+            console.error("Error loading applications:", error);
+            toast.error("Failed to load applications");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        loadApplications();
+    }, [statusFilter]);
+
+    const openViewModal = (app) => {
+        setSelectedApp(app);
+        setIsModalOpen(true);
+    };
 
     return (
-        <div className="p-6 h-full">
-            <h1 className="text-3xl font-bold mb-6 flex items-center gap-3 text-secondary">
-                <FaFileAlt /> Loan Applications
-            </h1>
+        <div className="p-6 bg-base-100 min-h-full">
+            <Helmet>
+                <title>All Loan Applications | Admin</title>
+            </Helmet>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {applications.map((app) => (
-                    <div key={app.id} className="card bg-base-100 shadow-xl border border-gray-100 hover:shadow-2xl transition-all">
-                        <div className="card-body">
-                            <div className="flex justify-between items-start">
-                                <h2 className="card-title text-xl text-primary">{app.applicant}</h2>
-                                <div className="badge badge-secondary badge-outline text-xs">New</div>
-                            </div>
-                            
-                            <div className="divider my-2"></div>
-                            
-                            <div className="space-y-2 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Requested:</span>
-                                    <span className="font-bold text-gray-800">{app.requestedAmount}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Income:</span>
-                                    <span>{app.income}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-500">Credit Score:</span>
-                                    <span className={`font-bold ${app.creditScore > 700 ? 'text-success' : 'text-warning'}`}>{app.creditScore}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs text-gray-400 mt-2">
-                                    <span className="flex items-center gap-1"><FaRegCalendarAlt /> Applied:</span>
-                                    <span>{app.date}</span>
-                                </div>
-                            </div>
-
-                            <div className="card-actions justify-end mt-4">
-                                <button className="btn btn-sm btn-primary w-full gap-2">
-                                    <FaClipboardCheck /> Review Application
-                                </button>
-                            </div>
-                        </div>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold flex items-center gap-3">
+                        <FaFileAlt className="text-secondary" /> Loan Applications
+                    </h1>
+                    <p className="text-gray-500 mt-1">Monitor and review all loan requests in the system.</p>
+                </div>
+                
+                <div className="flex gap-4 w-full md:w-auto">
+                    <div className="form-control w-full md:w-48">
+                        <select 
+                            className="select select-bordered w-full"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="">All Statuses</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
                     </div>
-                ))}
+                </div>
             </div>
 
-            {applications.length === 0 && (
-                <div className="text-center py-20 bg-base-100 rounded-xl border border-dashed border-gray-300">
-                    <p className="text-gray-500">No pending applications found.</p>
+            {/* Table */}
+            <div className="overflow-x-auto bg-white shadow-xl rounded-2xl border border-gray-100">
+                <table className="table w-full">
+                    <thead className="bg-base-200">
+                        <tr>
+                            <th>Loan ID</th>
+                            <th>User Info</th>
+                            <th>Category</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {loading ? (
+                            <tr>
+                                <td colSpan="6" className="text-center py-20">
+                                    <span className="loading loading-spinner loading-lg text-primary"></span>
+                                </td>
+                            </tr>
+                        ) : applications.length === 0 ? (
+                            <tr>
+                                <td colSpan="6" className="text-center py-20">
+                                    <div className="text-gray-400 italic">No applications found matching the criteria.</div>
+                                </td>
+                            </tr>
+                        ) : (
+                            applications.map((app) => (
+                                <tr key={app._id} className="hover:bg-base-50 transition-colors">
+                                    <td className="font-mono text-xs text-gray-500">#{app._id.slice(-6).toUpperCase()}</td>
+                                    <td>
+                                        <div className="flex items-center gap-3">
+                                            <div className="avatar placeholder">
+                                                <div className="bg-neutral text-neutral-content rounded-full w-8">
+                                                    <span className="text-xs">{app.applicantName?.charAt(0)}</span>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="font-bold">{app.applicantName}</div>
+                                                <div className="text-xs opacity-50">{app.applicantEmail}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span className="badge badge-sm badge-outline uppercase font-medium">{app.loanCategory}</span>
+                                    </td>
+                                    <td className="font-bold text-primary">${app.loanAmount?.toLocaleString()}</td>
+                                    <td>
+                                        <span className={`badge badge-sm font-bold ${
+                                            app.status === 'pending' ? 'badge-warning' :
+                                            app.status === 'approved' ? 'badge-success' : 'badge-error'
+                                        }`}>
+                                            {app.status.toUpperCase()}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button 
+                                            onClick={() => openViewModal(app)}
+                                            className="btn btn-xs btn-circle btn-ghost text-info tooltip" 
+                                            data-tip="View Details"
+                                        >
+                                            <FaEye />
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* View Modal */}
+            {isModalOpen && selectedApp && (
+                <div className={`modal modal-open`}>
+                    <div className="modal-box w-11/12 max-w-4xl rounded-2xl">
+                        <button onClick={() => setIsModalOpen(false)} className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4">✕</button>
+                        <h3 className="font-bold text-2xl mb-6 text-primary flex items-center gap-2">
+                            <FaFileAlt /> Application Details
+                        </h3>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <div className="bg-base-200 p-4 rounded-xl">
+                                    <h4 className="font-bold text-sm text-gray-500 uppercase mb-3 flex items-center gap-2">
+                                        <FaUser /> Applicant Information
+                                    </h4>
+                                    <div className="space-y-2">
+                                        <p><span className="font-medium">Name:</span> {selectedApp.applicantName}</p>
+                                        <p><span className="font-medium">Email:</span> {selectedApp.applicantEmail}</p>
+                                        <p><span className="font-medium">Contact:</span> {selectedApp.contactNumber}</p>
+                                        <p><span className="font-medium">NID/Passport:</span> {selectedApp.idNumber}</p>
+                                        <p><span className="font-medium">Address:</span> {selectedApp.address}</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-base-200 p-4 rounded-xl">
+                                    <h4 className="font-bold text-sm text-gray-500 uppercase mb-3">Financial Context</h4>
+                                    <div className="space-y-2">
+                                        <p><span className="font-medium">Income Source:</span> {selectedApp.incomeSource}</p>
+                                        <p><span className="font-medium">Monthly Income:</span> ${selectedApp.monthlyIncome?.toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="bg-primary/5 p-4 rounded-xl border border-primary/20">
+                                    <h4 className="font-bold text-sm text-primary uppercase mb-3">Loan Details</h4>
+                                    <div className="space-y-2">
+                                        <p><span className="font-medium">Program:</span> {selectedApp.loanTitle}</p>
+                                        <p><span className="font-medium">Category:</span> {selectedApp.loanCategory}</p>
+                                        <p><span className="font-medium text-lg">Requested Amount:</span> <span className="text-xl font-bold text-primary">${selectedApp.loanAmount?.toLocaleString()}</span></p>
+                                        <p><span className="font-medium">Interest Rate:</span> {selectedApp.interestRate}%</p>
+                                    </div>
+                                </div>
+
+                                <div className="bg-base-200 p-4 rounded-xl">
+                                    <h4 className="font-bold text-sm text-gray-500 uppercase mb-3">Reason & Notes</h4>
+                                    <p className="text-sm italic">"{selectedApp.reason}"</p>
+                                    {selectedApp.extraNotes && (
+                                        <div className="mt-3 pt-3 border-t border-gray-300">
+                                            <p className="text-xs font-bold text-gray-400 uppercase">Extra Notes:</p>
+                                            <p className="text-sm">{selectedApp.extraNotes}</p>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <div className="flex justify-between items-center p-2">
+                                    <div className={`badge badge-lg font-bold ${
+                                        selectedApp.status === 'pending' ? 'badge-warning' :
+                                        selectedApp.status === 'approved' ? 'badge-success' : 'badge-error'
+                                    }`}>
+                                        STATUS: {selectedApp.status.toUpperCase()}
+                                    </div>
+                                    <div className="text-xs text-gray-400">
+                                        Applied on: {new Date(selectedApp.createdAt).toLocaleDateString()}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="modal-action">
+                            <button className="btn btn-primary px-10" onClick={() => setIsModalOpen(false)}>Close</button>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
@@ -64,3 +217,4 @@ const AllApplications = () => {
 };
 
 export default AllApplications;
+

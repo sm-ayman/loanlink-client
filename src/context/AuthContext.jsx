@@ -83,46 +83,66 @@ const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password) => {
     setLoading(true);
-    // BACKDOOR FOR TEST ACCOUNTS (Bypass Firebase)
-    const testAccounts = {
-        'superadmin@loanlink.com': { uid: 'superadmin-123', name: 'Super Admin', role: 'admin' },
-        'admin@loanlink.com': { uid: 'admin-123', name: 'System Admin', role: 'admin' },
-        'manager1@loanlink.com': { uid: 'manager-123', name: 'Loan Manager 1', role: 'manager' },
-        'manager2@loanlink.com': { uid: 'manager-456', name: 'Loan Manager 2', role: 'manager' },
-        'manager@gamil.com': { uid: 'manager-gamil', name: 'Loan Manager', role: 'manager' },
-        'borrower1@loanlink.com': { uid: 'borrower-123', name: 'John Borrower', role: 'borrower' },
-        'borrower2@loanlink.com': { uid: 'borrower-456', name: 'Jane Borrower', role: 'borrower' }
+    
+    // FIXED ADMIN ACCOUNT CHECK
+    const FIXED_ADMIN = {
+      email: 'admin@loanlink.com',
+      password: 'admin123',
+      data: {
+        id: 'admin-fixed-id',
+        name: 'System Administrator',
+        email: 'admin@loanlink.com',
+        role: 'admin'
+      }
     };
 
-    if (testAccounts[email] && (password === (email.includes('admin') ? 'admin123' : email.includes('manager1') ? 'manager123' : email.includes('manager2') ? 'manager123' : email === 'manager@gamil.com' ? 'Manager#123' : 'borrower123'))) {
-        return new Promise((resolve) => {
-            const acc = testAccounts[email];
-            const fakeUser = {
-                uid: acc.uid,
-                email: email,
-                displayName: acc.name,
-                emailVerified: true
-            };
-            setUser(fakeUser);
-            setBackendUser({
-                id: acc.uid,
-                name: acc.name,
-                email: email,
-                role: acc.role
-            });
-            localStorage.setItem('fakeUser', JSON.stringify(fakeUser));
-            setLoading(false);
-            resolve({ user: fakeUser });
-        });
-    }
-
     try {
-      const result = await signInWithEmailAndPassword(auth, email, password);
-      // Firebase login successful, but we'll sync with backend on auth state change
-      return result;
-    } catch (error) {
-      setLoading(false);
-      throw error;
+      // 1. Check for Fixed Admin
+      if (email === FIXED_ADMIN.email && password === FIXED_ADMIN.password) {
+        const response = await authAPI.login({ email, password });
+        if (response.success) {
+          const backendData = response.data.user;
+          const fakeFirebaseUser = {
+            uid: backendData.id,
+            email: backendData.email,
+            displayName: backendData.name,
+            emailVerified: true
+          };
+          setUser(fakeFirebaseUser);
+          setBackendUser(backendData);
+          localStorage.setItem('fakeUser', JSON.stringify(fakeFirebaseUser));
+          setLoading(false);
+          return { user: fakeFirebaseUser };
+        }
+      }
+
+      // 2. Regular Backend Login (for Managers and Borrowers)
+      const response = await authAPI.login({ email, password });
+      if (response.success) {
+        const backendData = response.data.user;
+        const fakeFirebaseUser = {
+          uid: backendData.id,
+          email: backendData.email,
+          displayName: backendData.name,
+          emailVerified: true
+        };
+        setUser(fakeFirebaseUser);
+        setBackendUser(backendData);
+        localStorage.setItem('fakeUser', JSON.stringify(fakeFirebaseUser));
+        setLoading(false);
+        return { user: fakeFirebaseUser };
+      }
+    } catch (backendError) {
+      console.warn('Backend login failed, trying Firebase fallback:', backendError.response?.data?.message || backendError.message);
+      
+      // 3. Fallback to Firebase Auth (for users who only have Firebase accounts)
+      try {
+        const result = await signInWithEmailAndPassword(auth, email, password);
+        return result;
+      } catch (firebaseError) {
+        setLoading(false);
+        throw firebaseError;
+      }
     }
   };
 
@@ -176,16 +196,32 @@ const AuthProvider = ({ children }) => {
           console.error('Backend sync failed:', error);
         }
       } else {
-        // Check for fake super admin
-        const storedUser = localStorage.getItem('fakeUser');
-        if (storedUser) {
-          setUser(JSON.parse(storedUser));
-          setBackendUser({
-            id: 'superadmin-123',
-            name: 'Super Admin',
-            email: 'superadmin@loanlink.com',
-            role: 'admin'
-          });
+        // Check for fake test users (backdoor persistence)
+        const storedUserJson = localStorage.getItem('fakeUser');
+        if (storedUserJson) {
+          const storedUser = JSON.parse(storedUserJson);
+          setUser(storedUser);
+          
+          // Re-identify which test account this was to set the correct backend role
+          const testAccounts = {
+              'superadmin@loanlink.com': { id: 'superadmin-123', name: 'Super Admin', role: 'admin' },
+              'admin@loanlink.com': { id: 'admin-123', name: 'System Admin', role: 'admin' },
+              'manager1@loanlink.com': { id: 'manager-123', name: 'Loan Manager 1', role: 'manager' },
+              'manager2@loanlink.com': { id: 'manager-456', name: 'Loan Manager 2', role: 'manager' },
+              'manager@gamil.com': { id: 'manager-gamil', name: 'Loan Manager', role: 'manager' },
+              'borrower1@loanlink.com': { id: 'borrower-123', name: 'John Borrower', role: 'borrower' },
+              'borrower2@loanlink.com': { id: 'borrower-456', name: 'Jane Borrower', role: 'borrower' }
+          };
+
+          const acc = testAccounts[storedUser.email];
+          if (acc) {
+              setBackendUser({
+                  id: acc.id,
+                  name: acc.name,
+                  email: storedUser.email,
+                  role: acc.role
+              });
+          }
         } else {
           setUser(null);
           setBackendUser(null);

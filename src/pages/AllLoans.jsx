@@ -4,6 +4,7 @@ import SectionTitle from '../components/shared/SectionTitle';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { loanAPI } from '../utils/api';
+import { Helmet } from 'react-helmet-async';
 
 const AllLoans = () => {
     const axiosPublic = useAxiosPublic();
@@ -63,8 +64,18 @@ const AllLoans = () => {
         );
     }
 
+    const getImageUrl = (loan) => {
+        const img = loan.images?.[0] || loan.image;
+        if (!img) return "https://via.placeholder.com/400x250?text=Loan+Image";
+        if (img.startsWith('http')) return img;
+        return `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${img}`;
+    };
+
     return (
         <div className="min-h-screen bg-base-200 py-10 px-4">
+            <Helmet>
+                <title>All Loans | LoanLink</title>
+            </Helmet>
              <div className="max-w-screen-2xl mx-auto">
                 <SectionTitle heading="All Loan Programs" subHeading="Find the perfect loan for your needs" />
                 
@@ -91,7 +102,7 @@ const AllLoans = () => {
                         >
                             <option value="">All Categories</option>
                             {categories.map(cat => (
-                                <option key={cat} value={cat}>{cat}</option>
+                                <option key={cat} value={cat.toLowerCase()}>{cat}</option>
                             ))}
                         </select>
                     </div>
@@ -108,11 +119,11 @@ const AllLoans = () => {
                             <div key={loan._id} className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 border border-base-200">
                                 <figure className="h-56 overflow-hidden relative group">
                                     <img 
-                                        src={loan.image || "https://via.placeholder.com/400x250?text=Loan+Image"} 
+                                        src={getImageUrl(loan)} 
                                         alt={loan.title} 
                                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" 
                                     />
-                                    <div className="absolute top-4 right-4 badge badge-secondary badge-lg shadow-md">
+                                    <div className="absolute top-4 right-4 badge badge-secondary badge-lg shadow-md uppercase">
                                         {loan.category}
                                     </div>
                                 </figure>
@@ -129,7 +140,7 @@ const AllLoans = () => {
                                         </div>
                                         <div className="flex justify-between items-center bg-base-200 p-2 rounded-lg">
                                             <span className="font-semibold text-sm">Max Amount:</span>
-                                            <span className="text-primary font-bold text-lg">${loan.maxAmount?.toLocaleString()}</span>
+                                            <span className="text-primary font-bold text-lg">${loan.maxLoanLimit?.toLocaleString()}</span>
                                         </div>
                                     </div>
 

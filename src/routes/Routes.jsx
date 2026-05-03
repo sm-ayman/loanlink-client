@@ -23,6 +23,8 @@ import AllLoansAdmin from "../pages/dashboard/admin/AllLoansAdmin";
 import AllApplications from "../pages/dashboard/admin/AllApplications";
 import SuperAdminDashboard from "../pages/dashboard/super-admin/SuperAdminDashboard";
 import ManageAdmins from "../pages/dashboard/super-admin/ManageAdmins";
+import AdminRoute from "./AdminRoute";
+import ManagerRoute from "./ManagerRoute";
 
 const router = createBrowserRouter([
   {
@@ -96,33 +98,33 @@ const router = createBrowserRouter([
         // Manager Routes
         {
             path: "add-loan",
-            element: <AddLoan />
+            element: <ManagerRoute><AddLoan /></ManagerRoute>
         },
         {
              path: "manage-loans",
-             element: <ManageLoans />
+             element: <ManagerRoute><ManageLoans /></ManagerRoute>
         },
         {
-             path: "pending-applications",
-             element: <PendingApplications />
+             path: "pending-loans",
+             element: <ManagerRoute><PendingApplications /></ManagerRoute>
         },
         {
-             path: "approved-applications",
-             element: <ApprovedApplications />
+             path: "approved-loans",
+             element: <ManagerRoute><ApprovedApplications /></ManagerRoute>
         },
 
         // Admin Routes
         {
             path: "manage-users",
-            element: <ManageUsers />
+            element: <AdminRoute><ManageUsers /></AdminRoute>
         },
         {
-             path: "all-loans-admin",
-             element: <AllLoansAdmin />
+             path: "all-loan",
+             element: <AdminRoute><AllLoansAdmin /></AdminRoute>
         },
         {
-             path: "all-applications",
-             element: <AllApplications />
+             path: "loan-applications",
+             element: <AdminRoute><AllApplications /></AdminRoute>
         },
 
         // Super Admin Routes
