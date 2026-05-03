@@ -210,6 +210,12 @@ export const applicationAPI = {
     const response = await api.get(`/applications/${applicationId}`);
     return response.data;
   },
+
+  // Get application statistics
+  getApplicationStats: async () => {
+    const response = await api.get('/applications/stats');
+    return response.data;
+  },
 };
 
 // Payment API calls
