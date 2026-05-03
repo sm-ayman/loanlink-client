@@ -14,8 +14,9 @@ const LoanDetails = () => {
     const { id } = useParams();
     const { user, backendUser } = useContext(AuthContext);
     const navigate = useNavigate();
-    const { register, handleSubmit, reset } = useForm();
-
+    const { register, handleSubmit, reset, trigger, getValues, formState: { errors } } = useForm();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
     const [loan, setLoan] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
     const [showConfetti, setShowConfetti] = useState(false);
@@ -44,14 +45,16 @@ const LoanDetails = () => {
     const canApply = user && !isAdminOrManager;
 
     const onSubmit = async (data) => {
+        console.log("Submitting application data:", data);
+        setIsSubmitting(true);
         try {
             const applicationData = {
                 ...data,
                 loanId: id,
-                loanTitle: loan.title,
-                interestRate: loan.interestRate,
-                userEmail: user.email
+                monthlyIncome: parseFloat(data.monthlyIncome),
+                loanAmount: parseFloat(data.loanAmount),
             };
+            
             const response = await applicationAPI.submitApplication(applicationData);
             if (response.success) {
                 toast.success('Application submitted successfully!');
@@ -66,8 +69,32 @@ const LoanDetails = () => {
             }
         } catch (err) {
             console.error("Failed to submit application", err);
-            toast.error(err.response?.data?.message || "Failed to submit application");
+            if (err.response?.status === 400 && err.response?.data?.errors) {
+                const errorMsgs = err.response.data.errors.map(e => e.message).join(', ');
+                toast.error(`Validation Failed: ${errorMsgs}`);
+            } else {
+                toast.error(err.response?.data?.message || "Failed to submit application");
+            }
+        } finally {
+            setIsSubmitting(false);
         }
+    };
+
+    const handleManualSubmit = async () => {
+        console.log("Manual trigger started");
+        const isValid = await trigger();
+        if (isValid) {
+            const data = getValues();
+            await onSubmit(data);
+        } else {
+            console.warn("Manual validation failed:", errors);
+            toast.error("Please correct the errors in the form.");
+        }
+    };
+
+    const onFormError = (errors) => {
+        console.warn("Form validation failed:", errors);
+        toast.error("Please correct the errors in the form.");
     };
 
     if (isLoading) {
@@ -102,15 +129,15 @@ const LoanDetails = () => {
                     <div className="md:w-1/2 p-8">
                         <div className="badge badge-secondary mb-2">{loan.category}</div>
                         <h1 className="text-3xl font-bold mb-4">{loan.title}</h1>
-                        <p className="text-gray-600 mb-6">{loan.description}</p>
+                        <p className="opacity-80 mb-6">{loan.description}</p>
                         
                         <div className="grid grid-cols-2 gap-4 mb-8">
                             <div className="bg-base-200 p-3 rounded-lg text-center">
-                                <p className="text-xs uppercase text-gray-500 font-bold">Interest Rate</p>
+                                <p className="text-xs uppercase opacity-60 font-bold">Interest Rate</p>
                                 <p className="text-xl font-bold text-primary">{loan.interestRate}%</p>
                             </div>
                             <div className="bg-base-200 p-3 rounded-lg text-center">
-                                <p className="text-xs uppercase text-gray-500 font-bold">Max Limit</p>
+                                <p className="text-xs uppercase opacity-60 font-bold">Max Limit</p>
                                 <p className="text-xl font-bold text-primary">${loan.maxLoanLimit?.toLocaleString()}</p>
                             </div>
                         </div>
@@ -145,7 +172,7 @@ const LoanDetails = () => {
 
                 <div className="p-8 border-t border-base-200">
                     <h2 className="text-2xl font-bold mb-4">Requirements</h2>
-                    <ul className="list-disc list-inside space-y-2 text-gray-700">
+                    <ul className="list-disc list-inside space-y-2 opacity-80">
                         {loan.requiredDocuments?.map(doc => (
                             <li key={doc}>{doc}</li>
                         )) || (
@@ -161,68 +188,116 @@ const LoanDetails = () => {
 
             {/* Application Modal */}
             <dialog id="apply_modal" className="modal">
-                <div className="modal-box w-11/12 max-w-5xl">
-                    <h3 className="font-bold text-2xl mb-6">Loan Application Form</h3>
-                    <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* READ-ONLY FIELDS */}
-                        <div className="form-control">
-                            <label className="label"><span className="label-text">Your Email</span></label>
-                            <input type="email" value={user?.email || ''} readOnly className="input input-bordered bg-base-200" />
-                        </div>
-                        <div className="form-control">
-                            <label className="label"><span className="label-text">Loan Title</span></label>
-                            <input type="text" value={loan.title} readOnly className="input input-bordered bg-base-200" />
-                        </div>
-                        <div className="form-control">
-                            <label className="label"><span className="label-text">Interest Rate (%)</span></label>
-                            <input type="text" value={loan.interestRate} readOnly className="input input-bordered bg-base-200" />
+                <div className="modal-box w-11/12 max-w-5xl bg-base-100 text-base-content rounded-2xl">
+                    <h3 className="font-bold text-2xl mb-6 text-primary flex items-center gap-2">
+                        <FaFileAlt /> Loan Application Form
+                    </h3>
+                    <form onSubmit={handleSubmit(onSubmit, onFormError)} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* READ-ONLY INFO SECTION */}
+                        <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 bg-base-200 p-4 rounded-xl mb-2">
+                            <div className="form-control">
+                                <label className="label py-1"><span className="label-text text-xs font-bold uppercase opacity-60">Applicant</span></label>
+                                <p className="font-semibold px-1">{user?.displayName || 'User'}</p>
+                                <p className="text-xs opacity-60 px-1">{user?.email}</p>
+                            </div>
+                            <div className="form-control">
+                                <label className="label py-1"><span className="label-text text-xs font-bold uppercase opacity-60">Loan Program</span></label>
+                                <p className="font-semibold px-1">{loan.title}</p>
+                                <p className="text-xs opacity-60 px-1">{loan.category}</p>
+                            </div>
+                            <div className="form-control">
+                                <label className="label py-1"><span className="label-text text-xs font-bold uppercase opacity-60">Interest Rate</span></label>
+                                <p className="font-semibold px-1 text-primary">{loan.interestRate}% Yearly</p>
+                            </div>
                         </div>
 
                         {/* USER INPUT FIELDS */}
                         <div className="form-control">
-                            <label className="label"><span className="label-text">First Name</span></label>
-                            <input type="text" {...register("firstName", { required: true })} className="input input-bordered" />
+                            <label className="label font-semibold">First Name</label>
+                            <input type="text" {...register("firstName", { required: "First name is required" })} className={`input input-bordered focus:input-primary ${errors.firstName ? 'input-error' : ''}`} placeholder="Enter your first name" />
+                            {errors.firstName && <span className="text-error text-xs mt-1">{errors.firstName.message}</span>}
                         </div>
                         <div className="form-control">
-                            <label className="label"><span className="label-text">Last Name</span></label>
-                            <input type="text" {...register("lastName", { required: true })} className="input input-bordered" />
+                            <label className="label font-semibold">Last Name</label>
+                            <input type="text" {...register("lastName", { required: "Last name is required" })} className={`input input-bordered focus:input-primary ${errors.lastName ? 'input-error' : ''}`} placeholder="Enter your last name" />
+                            {errors.lastName && <span className="text-error text-xs mt-1">{errors.lastName.message}</span>}
                         </div>
                         <div className="form-control">
-                            <label className="label"><span className="label-text">Contact Number</span></label>
-                            <input type="text" {...register("contactNumber", { required: true })} className="input input-bordered" />
+                            <label className="label font-semibold">Contact Number</label>
+                            <input type="text" {...register("contactNumber", { required: "Contact number is required" })} className={`input input-bordered focus:input-primary ${errors.contactNumber ? 'input-error' : ''}`} placeholder="+880 1XXX XXXXXX" />
+                            {errors.contactNumber && <span className="text-error text-xs mt-1">{errors.contactNumber.message}</span>}
                         </div>
                         <div className="form-control">
-                            <label className="label"><span className="label-text">National ID / Passport</span></label>
-                            <input type="text" {...register("identityNumber", { required: true })} className="input input-bordered" />
+                            <label className="label font-semibold">National ID / Passport</label>
+                            <input type="text" {...register("nationalId", { required: "National ID is required" })} className={`input input-bordered focus:input-primary ${errors.nationalId ? 'input-error' : ''}`} placeholder="Enter NID or Passport Number" />
+                            {errors.nationalId && <span className="text-error text-xs mt-1">{errors.nationalId.message}</span>}
                         </div>
                         <div className="form-control">
-                            <label className="label"><span className="label-text">Income Source</span></label>
-                            <input type="text" {...register("incomeSource", { required: true })} className="input input-bordered" />
+                            <label className="label font-semibold">Income Source</label>
+                            <select {...register("incomeSource", { required: "Please select income source" })} className={`select select-bordered focus:select-primary ${errors.incomeSource ? 'select-error' : ''}`}>
+                                <option value="">Select source</option>
+                                <option value="salary">Salary / Employment</option>
+                                <option value="business">Business Income</option>
+                                <option value="freelance">Freelance / Gig Work</option>
+                                <option value="investment">Investment Income</option>
+                                <option value="rental">Rental Income</option>
+                                <option value="other">Other</option>
+                            </select>
+                            {errors.incomeSource && <span className="text-error text-xs mt-1">{errors.incomeSource.message}</span>}
                         </div>
                         <div className="form-control">
-                            <label className="label"><span className="label-text">Monthly Income ($)</span></label>
-                            <input type="number" {...register("monthlyIncome", { required: true })} className="input input-bordered" />
+                            <label className="label font-semibold">Monthly Income ($)</label>
+                            <input type="number" {...register("monthlyIncome", { required: "Monthly income is required", min: { value: 0, message: "Income cannot be negative" } })} className={`input input-bordered focus:input-primary ${errors.monthlyIncome ? 'input-error' : ''}`} placeholder="e.g. 5000" />
+                            {errors.monthlyIncome && <span className="text-error text-xs mt-1">{errors.monthlyIncome.message}</span>}
                         </div>
                         <div className="form-control">
-                            <label className="label"><span className="label-text">Requested Loan Amount ($)</span></label>
-                            <input type="number" {...register("requestedAmount", { required: true, max: loan.maxLoanLimit })} className="input input-bordered" />
+                            <label className="label font-semibold">Requested Loan Amount ($)</label>
+                            <input 
+                                type="number" 
+                                {...register("loanAmount", { 
+                                    required: "Amount is required", 
+                                    min: { value: 100, message: "Min amount is $100" },
+                                    max: { value: loan.maxLoanLimit, message: `Max limit is $${loan.maxLoanLimit}` }
+                                })} 
+                                className={`input input-bordered focus:input-primary ${errors.loanAmount ? 'input-error' : ''}`} 
+                                placeholder={`Max: ${loan.maxLoanLimit}`}
+                            />
+                            {errors.loanAmount && <span className="text-error text-xs mt-1">{errors.loanAmount.message}</span>}
+                        </div>
+                        <div className="form-control">
+                            <label className="label font-semibold">Address</label>
+                            <input type="text" {...register("address", { required: "Address is required", minLength: { value: 10, message: "Address must be at least 10 characters" } })} className={`input input-bordered focus:input-primary ${errors.address ? 'input-error' : ''}`} placeholder="Full residential address" />
+                            {errors.address && <span className="text-error text-xs mt-1">{errors.address.message}</span>}
                         </div>
                         <div className="form-control md:col-span-2">
-                            <label className="label"><span className="label-text">Reason for Loan</span></label>
-                            <textarea {...register("loanReason", { required: true })} className="textarea textarea-bordered h-24" placeholder="Briefly explain why you need this loan"></textarea>
+                            <label className="label font-semibold">Reason for Loan</label>
+                            <textarea {...register("reasonForLoan", { required: "Please provide a reason", minLength: { value: 10, message: "Reason must be at least 10 characters" } })} className={`textarea textarea-bordered h-24 focus:textarea-primary ${errors.reasonForLoan ? 'textarea-error' : ''}`} placeholder="Explain why you need this loan (minimum 10 characters)"></textarea>
+                            {errors.reasonForLoan && <span className="text-error text-xs mt-1">{errors.reasonForLoan.message}</span>}
                         </div>
                         <div className="form-control md:col-span-2">
-                            <label className="label"><span className="label-text">Address</span></label>
-                            <input type="text" {...register("address", { required: true })} className="input input-bordered" />
-                        </div>
-                        <div className="form-control md:col-span-2">
-                            <label className="label"><span className="label-text">Extra Notes (Optional)</span></label>
-                            <input type="text" {...register("extraNotes")} className="input input-bordered" />
+                            <label className="label font-semibold">Extra Notes (Optional)</label>
+                            <input type="text" {...register("extraNotes")} className="input input-bordered focus:input-primary" placeholder="Any additional information..." />
                         </div>
 
-                        <div className="modal-action md:col-span-2">
-                            <button type="submit" className="btn btn-primary px-10">Submit Application</button>
-                            <button type="button" onClick={() => document.getElementById('apply_modal').close()} className="btn">Cancel</button>
+                        <div className="modal-action md:col-span-2 flex gap-4">
+                            <button 
+                                type="button" 
+                                onClick={handleManualSubmit}
+                                disabled={isSubmitting}
+                                className={`btn btn-primary px-12 shadow-lg shadow-primary/30 ${isSubmitting ? 'loading' : ''}`}
+                            >
+                                {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                            </button>
+                            <button 
+                                type="button" 
+                                disabled={isSubmitting}
+                                onClick={() => {
+                                    document.getElementById('apply_modal').close();
+                                }} 
+                                className="btn btn-ghost px-8"
+                            >
+                                Cancel
+                            </button>
                         </div>
                     </form>
                 </div>

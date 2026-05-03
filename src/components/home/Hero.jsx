@@ -33,7 +33,7 @@ const Hero = () => {
                     <h1 className="text-5xl font-bold leading-tight">
                         Empowering Your <span className="text-primary">Financial Dreams</span>
                     </h1>
-                    <p className="py-6 text-lg text-gray-600">
+                    <p className="py-6 text-lg opacity-70">
                         Get quick, transparent, and hassle-free loans. Whether it's for education, business, or personal needs, LoanLink bridges the gap between you and your goals.
                     </p>
                     <Link to="/all-loans" className="btn btn-primary btn-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">

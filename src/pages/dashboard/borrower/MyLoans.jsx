@@ -86,10 +86,10 @@ const MyLoans = () => {
     };
 
     const getStatusColor = (status) => {
-        switch (status) {
-            case 'Pending': return 'badge-warning';
-            case 'Approved': return 'badge-success';
-            case 'Rejected': return 'badge-error';
+        switch (status?.toLowerCase()) {
+            case 'pending': return 'badge-warning';
+            case 'approved': return 'badge-success';
+            case 'rejected': return 'badge-error';
             default: return 'badge-ghost';
         }
     };
@@ -115,23 +115,23 @@ const MyLoans = () => {
                         <tbody>
                             {applications.length === 0 ? (
                                 <tr>
-                                    <td colSpan="5" className="text-center py-10 text-gray-500">You haven't applied for any loans yet.</td>
+                                    <td colSpan="5" className="text-center py-10 opacity-50 italic">You haven't applied for any loans yet.</td>
                                 </tr>
                             ) : (
                                 applications.map((app) => (
                                     <tr key={app._id} className="hover:bg-base-200/50 transition-colors">
                                         <td>
-                                            <div className="font-bold">{app.loanTitle}</div>
+                                            <div className="font-bold">{app.loanId?.title || 'Unknown Loan'}</div>
                                             <div className="text-sm opacity-50">ID: {app._id.substring(0, 8)}...</div>
                                         </td>
-                                        <td className="font-bold text-primary">${app.requestedAmount?.toLocaleString()}</td>
+                                        <td className="font-bold text-primary">${app.loanAmount?.toLocaleString()}</td>
                                         <td>
-                                            <span className={`badge ${getStatusColor(app.status)} font-semibold`}>
+                                            <span className={`badge ${getStatusColor(app.status)} font-semibold uppercase`}>
                                                 {app.status}
                                             </span>
                                         </td>
                                         <td>
-                                            {app.paymentStatus === 'Paid' ? (
+                                            {app.applicationFeeStatus === 'paid' ? (
                                                 <button 
                                                     onClick={() => handleViewPaymentDetails(app._id)}
                                                     className="badge badge-success cursor-pointer hover:scale-105 transition-transform"
@@ -150,7 +150,7 @@ const MyLoans = () => {
                                                 View
                                             </button>
                                             
-                                            {app.status === 'Pending' && (
+                                            {app.status === 'pending' && (
                                                 <button 
                                                     onClick={() => handleCancel(app._id)}
                                                     className="btn btn-xs btn-outline btn-error"
@@ -159,7 +159,7 @@ const MyLoans = () => {
                                                 </button>
                                             )}
 
-                                            {app.paymentStatus === 'Unpaid' && (
+                                            {app.applicationFeeStatus === 'unpaid' && app.status === 'approved' && (
                                                 <button 
                                                     onClick={() => handlePay(app._id)}
                                                     className="btn btn-xs btn-primary font-bold"
@@ -178,32 +178,32 @@ const MyLoans = () => {
 
             {/* Application Details Modal */}
             <dialog id="details_modal" className="modal">
-                <div className="modal-box w-11/12 max-w-3xl">
+                <div className="modal-box w-11/12 max-w-3xl bg-base-100 text-base-content">
                     <h3 className="font-bold text-2xl mb-4">Application Details</h3>
                     {selectedApplication && (
                         <div className="grid grid-cols-2 gap-4">
                             <div className="bg-base-200 p-4 rounded-xl">
-                                <p className="text-xs uppercase font-bold text-gray-500">Loan</p>
-                                <p className="font-bold">{selectedApplication.loanTitle}</p>
+                                <p className="text-xs uppercase font-bold opacity-60">Loan</p>
+                                <p className="font-bold">{selectedApplication.loanId?.title || 'Unknown'}</p>
                             </div>
                             <div className="bg-base-200 p-4 rounded-xl">
-                                <p className="text-xs uppercase font-bold text-gray-500">Requested Amount</p>
-                                <p className="font-bold text-primary">${selectedApplication.requestedAmount?.toLocaleString()}</p>
+                                <p className="text-xs uppercase font-bold opacity-60">Requested Amount</p>
+                                <p className="font-bold text-primary">${selectedApplication.loanAmount?.toLocaleString()}</p>
                             </div>
                             <div className="bg-base-200 p-4 rounded-xl">
-                                <p className="text-xs uppercase font-bold text-gray-500">Status</p>
-                                <p className="font-bold">{selectedApplication.status}</p>
+                                <p className="text-xs uppercase font-bold opacity-60">Status</p>
+                                <p className="font-bold uppercase">{selectedApplication.status}</p>
                             </div>
                             <div className="bg-base-200 p-4 rounded-xl">
-                                <p className="text-xs uppercase font-bold text-gray-500">Application Fee</p>
-                                <p className="font-bold">{selectedApplication.paymentStatus}</p>
+                                <p className="text-xs uppercase font-bold opacity-60">Application Fee</p>
+                                <p className="font-bold uppercase">{selectedApplication.applicationFeeStatus}</p>
                             </div>
                             <div className="bg-base-200 p-4 rounded-xl col-span-2">
-                                <p className="text-xs uppercase font-bold text-gray-500">Reason for Loan</p>
-                                <p>{selectedApplication.loanReason}</p>
+                                <p className="text-xs uppercase font-bold opacity-60">Reason for Loan</p>
+                                <p>{selectedApplication.reasonForLoan}</p>
                             </div>
                             <div className="bg-base-200 p-4 rounded-xl col-span-2">
-                                <p className="text-xs uppercase font-bold text-gray-500">Address</p>
+                                <p className="text-xs uppercase font-bold opacity-60">Address</p>
                                 <p>{selectedApplication.address}</p>
                             </div>
                         </div>
@@ -216,7 +216,7 @@ const MyLoans = () => {
 
             {/* Payment Details Modal */}
             <dialog id="payment_details_modal" className="modal">
-                <div className="modal-box w-11/12 max-w-lg">
+                <div className="modal-box w-11/12 max-w-lg bg-base-100 text-base-content">
                     <h3 className="font-bold text-2xl mb-6">Payment Information</h3>
                     {isDetailsLoading ? (
                         <div className="flex justify-center p-10">
@@ -225,24 +225,24 @@ const MyLoans = () => {
                     ) : (
                         paymentDetails ? (
                             <div className="space-y-4">
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500">Email:</span>
+                                <div className="flex justify-between border-b border-base-300 pb-2">
+                                    <span className="opacity-60">Email:</span>
                                     <span className="font-semibold">{paymentDetails.email}</span>
                                 </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500">Transaction ID:</span>
+                                <div className="flex justify-between border-b border-base-300 pb-2">
+                                    <span className="opacity-60">Transaction ID:</span>
                                     <span className="font-mono text-xs">{paymentDetails.transactionId}</span>
                                 </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500">Loan Title:</span>
+                                <div className="flex justify-between border-b border-base-300 pb-2">
+                                    <span className="opacity-60">Loan Title:</span>
                                     <span className="font-semibold">{paymentDetails.loanTitle}</span>
                                 </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500">Fee Amount:</span>
+                                <div className="flex justify-between border-b border-base-300 pb-2">
+                                    <span className="opacity-60">Fee Amount:</span>
                                     <span className="font-bold text-primary">${paymentDetails.amount}</span>
                                 </div>
-                                <div className="flex justify-between border-b pb-2">
-                                    <span className="text-gray-500">Payment Date:</span>
+                                <div className="flex justify-between border-b border-base-300 pb-2">
+                                    <span className="opacity-60">Payment Date:</span>
                                     <span className="font-semibold">{new Date(paymentDetails.createdAt).toLocaleString()}</span>
                                 </div>
                             </div>

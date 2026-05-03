@@ -38,7 +38,7 @@ const PendingApplications = () => {
   const handleApprove = async (application) => {
     const result = await Swal.fire({
       title: 'Approve Application?',
-      text: `Are you sure you want to approve the application for ${application.userEmail}?`,
+      text: `Are you sure you want to approve the application for ${application.userId?.email}?`,
       icon: 'question',
       showCancelButton: true,
       confirmButtonColor: '#10B981',
@@ -63,7 +63,7 @@ const PendingApplications = () => {
   const handleReject = async (application) => {
     const result = await Swal.fire({
       title: 'Reject Application?',
-      text: `Are you sure you want to reject the application for ${application.userEmail}?`,
+      text: `Are you sure you want to reject the application for ${application.userId?.email}?`,
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#EF4444',
@@ -148,7 +148,7 @@ const PendingApplications = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-primary">Pending Applications</h1>
-          <p className="text-gray-600 mt-1">Review and manage loan applications awaiting approval</p>
+          <p className="opacity-70 mt-1">Review and manage loan applications awaiting approval</p>
         </div>
         <div className="stats shadow">
           <div className="stat">
@@ -164,12 +164,12 @@ const PendingApplications = () => {
       {applications.length === 0 ? (
         <div className="text-center py-16">
           <div className="text-6xl mb-4">📋</div>
-          <h2 className="text-2xl font-bold text-gray-700 mb-2">No Pending Applications</h2>
-          <p className="text-gray-500">All applications have been reviewed</p>
+          <h2 className="text-2xl font-bold mb-2">No Pending Applications</h2>
+          <p className="opacity-60">All applications have been reviewed</p>
         </div>
       ) : (
         <>
-          <div className="bg-base-100 shadow-xl rounded-lg overflow-hidden">
+          <div className="bg-base-100 shadow-xl rounded-lg overflow-hidden border border-base-200">
             <div className="overflow-x-auto">
               <table className="table table-zebra w-full">
                 <thead className="bg-base-200">
@@ -189,7 +189,7 @@ const PendingApplications = () => {
                       <td className="font-medium">
                         {(currentPage - 1) * limit + index + 1}
                       </td>
-                      <td className="font-mono text-sm">
+                      <td className="font-mono text-sm opacity-70">
                         {application._id.slice(-8).toUpperCase()}
                       </td>
                       <td>
@@ -200,26 +200,26 @@ const PendingApplications = () => {
                             </div>
                           </div>
                           <div>
-                            <div className="font-medium">{application.userId.name}</div>
-                            <div className="text-sm text-gray-500">{application.userId.email}</div>
+                            <div className="font-medium">{application.userId?.name}</div>
+                            <div className="text-sm opacity-60">{application.userId?.email}</div>
                           </div>
                         </div>
                       </td>
                       <td>
                         <div>
-                          <div className="font-medium">{application.loanId.title}</div>
-                          <div className="text-sm text-gray-500">{application.loanId.category}</div>
+                          <div className="font-medium">{application.loanId?.title}</div>
+                          <div className="text-sm opacity-60">{application.loanId?.category}</div>
                         </div>
                       </td>
                       <td>
                         <div className="flex items-center gap-2">
                           <FaMoneyBillWave className="text-green-500" />
-                          <span className="font-semibold">${application.loanAmount}</span>
+                          <span className="font-semibold">${application.loanAmount?.toLocaleString()}</span>
                         </div>
                       </td>
                       <td>
                         <div className="flex items-center gap-2">
-                          <FaCalendar className="text-gray-400" />
+                          <FaCalendar className="opacity-40" />
                           <span className="text-sm">
                             {new Date(application.createdAt).toLocaleDateString()}
                           </span>

@@ -111,7 +111,7 @@ const AllLoansAdmin = () => {
                     <h1 className="text-3xl font-bold flex items-center gap-2">
                         <FaHome className="text-primary" /> All Loans Management
                     </h1>
-                    <p className="text-gray-500 mt-1">Manage all available loan programs across the system.</p>
+                    <p className="opacity-70 mt-1">Manage all available loan programs across the system.</p>
                 </div>
                 <button onClick={() => openModal()} className="btn btn-primary shadow-lg">
                     <FaPlus /> Create New Loan
@@ -140,7 +140,7 @@ const AllLoansAdmin = () => {
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto bg-white shadow-xl rounded-2xl border border-gray-100">
+            <div className="overflow-x-auto bg-base-100 shadow-xl rounded-2xl border border-base-200">
                 <table className="table w-full">
                     <thead className="bg-base-200">
                         <tr>
@@ -163,12 +163,12 @@ const AllLoansAdmin = () => {
                         ) : loans.length === 0 ? (
                             <tr>
                                 <td colSpan="7" className="text-center py-20">
-                                    <div className="text-gray-400 italic">No loans found in the system.</div>
+                                    <div className="opacity-40 italic">No loans found in the system.</div>
                                 </td>
                             </tr>
                         ) : (
                             loans.map((loan, index) => (
-                                <tr key={loan._id} className="hover:bg-base-50 transition-colors">
+                                <tr key={loan._id} className="hover:bg-base-200 transition-colors">
                                     <td>{index + 1}</td>
                                     <td>
                                         <div className="avatar">
@@ -258,7 +258,7 @@ const LoanModal = ({ loan, isOpen, onClose, onSave }) => {
 
     return (
         <div className={`modal ${isOpen ? 'modal-open' : ''}`}>
-            <div className="modal-box w-11/12 max-w-2xl p-8 rounded-2xl shadow-2xl">
+            <div className="modal-box w-11/12 max-w-2xl p-8 rounded-2xl shadow-2xl bg-base-100 text-base-content">
                 <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4">✕</button>
                 <h3 className="font-bold text-2xl mb-6 text-primary flex items-center gap-2">
                     {loan ? <FaEdit /> : <FaPlus />} {loan ? 'Edit Loan Program' : 'Create New Loan'}

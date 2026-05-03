@@ -81,6 +81,47 @@ const AuthProvider = ({ children }) => {
     }
   };
 
+  const signUp = async (name, email, password, role, photoURL) => {
+    setLoading(true);
+    try {
+      // 1. Create Firebase User
+      const result = await createUserWithEmailAndPassword(auth, email, password);
+      
+      // 2. Update Firebase Profile
+      await updateProfile(result.user, {
+        displayName: name,
+        photoURL: photoURL || ''
+      });
+
+      // 3. Sync with Backend
+      const userData = {
+        uid: result.user.uid,
+        email: email,
+        name: name,
+        photoURL: photoURL || '',
+        role: role || 'borrower'
+      };
+
+      const response = await authAPI.registerFromFirebase(userData);
+      
+      if (response.success) {
+        setBackendUser(response.data.user);
+        localStorage.setItem('fakeUser', JSON.stringify({
+          uid: result.user.uid,
+          email: result.user.email,
+          displayName: name,
+          photoURL: photoURL || ''
+        }));
+        localStorage.setItem('backendUser', JSON.stringify(response.data.user));
+      }
+
+      return result;
+    } catch (error) {
+      setLoading(false);
+      throw error;
+    }
+  };
+
   const signIn = async (email, password) => {
     setLoading(true);
     
@@ -111,6 +152,7 @@ const AuthProvider = ({ children }) => {
           setUser(fakeFirebaseUser);
           setBackendUser(backendData);
           localStorage.setItem('fakeUser', JSON.stringify(fakeFirebaseUser));
+          localStorage.setItem('backendUser', JSON.stringify(backendData));
           setLoading(false);
           return { user: fakeFirebaseUser };
         }
@@ -129,6 +171,7 @@ const AuthProvider = ({ children }) => {
         setUser(fakeFirebaseUser);
         setBackendUser(backendData);
         localStorage.setItem('fakeUser', JSON.stringify(fakeFirebaseUser));
+        localStorage.setItem('backendUser', JSON.stringify(backendData));
         setLoading(false);
         return { user: fakeFirebaseUser };
       }
@@ -160,6 +203,7 @@ const AuthProvider = ({ children }) => {
     setLoading(true);
     try {
       localStorage.removeItem('fakeUser');
+      localStorage.removeItem('backendUser');
       setUser(null);
       setBackendUser(null);
       await signOut(auth);
@@ -186,11 +230,26 @@ const AuthProvider = ({ children }) => {
       if (currentUser) {
         setUser(currentUser);
 
-        // Sync with backend
+        // Immediately restore backend user from storage to prevent flashing borrower role
+        const storedBackendUser = localStorage.getItem('backendUser');
+        if (storedBackendUser) {
+          try {
+            const parsed = JSON.parse(storedBackendUser);
+            if (parsed.email === currentUser.email) {
+                setBackendUser(parsed);
+            }
+          } catch (e) {
+            console.error("Failed to parse stored backend user", e);
+          }
+        }
+
+        // Sync with backend to get fresh data
         try {
           const backendUserData = await loginWithBackend(currentUser);
           if (backendUserData) {
             console.log('Backend user synced:', backendUserData);
+            setBackendUser(backendUserData);
+            localStorage.setItem('backendUser', JSON.stringify(backendUserData));
           }
         } catch (error) {
           console.error('Backend sync failed:', error);
@@ -208,7 +267,7 @@ const AuthProvider = ({ children }) => {
               'admin@loanlink.com': { id: 'admin-123', name: 'System Admin', role: 'admin' },
               'manager1@loanlink.com': { id: 'manager-123', name: 'Loan Manager 1', role: 'manager' },
               'manager2@loanlink.com': { id: 'manager-456', name: 'Loan Manager 2', role: 'manager' },
-              'manager@gamil.com': { id: 'manager-gamil', name: 'Loan Manager', role: 'manager' },
+              'manager@gmail.com': { id: 'manager-gamil', name: 'Loan Manager', role: 'manager' },
               'borrower1@loanlink.com': { id: 'borrower-123', name: 'John Borrower', role: 'borrower' },
               'borrower2@loanlink.com': { id: 'borrower-456', name: 'Jane Borrower', role: 'borrower' }
           };
@@ -221,6 +280,12 @@ const AuthProvider = ({ children }) => {
                   email: storedUser.email,
                   role: acc.role
               });
+          } else {
+              // Try to restore from backendUser storage
+              const storedBackendUser = localStorage.getItem('backendUser');
+              if (storedBackendUser) {
+                  setBackendUser(JSON.parse(storedBackendUser));
+              }
           }
         } else {
           setUser(null);
@@ -243,6 +308,7 @@ const AuthProvider = ({ children }) => {
     loading,
     setLoading,
     createUser,
+    signUp,
     signIn,
     signInWithGoogle,
     signInWithGithub,

@@ -111,7 +111,7 @@ const AllLoans = () => {
                 {/* Loans Grid */}
                 {loans.length === 0 ? (
                     <div className="text-center py-20">
-                        <h3 className="text-2xl font-bold text-gray-500">No loans found matching your criteria.</h3>
+                        <h3 className="text-2xl font-bold opacity-50">No loans found matching your criteria.</h3>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -131,7 +131,7 @@ const AllLoans = () => {
                                     <h2 className="card-title text-2xl font-bold mb-2">
                                         {loan.title}
                                     </h2>
-                                    <p className="text-gray-600 line-clamp-2 mb-4">{loan.description}</p>
+                                    <p className="opacity-70 line-clamp-2 mb-4">{loan.description}</p>
                                     
                                     <div className="space-y-2 mb-6">
                                         <div className="flex justify-between items-center bg-base-200 p-2 rounded-lg">

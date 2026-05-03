@@ -5,11 +5,21 @@ import { AuthContext } from "../context/AuthContext";
 import useRole from "../hooks/useRole"; // We'll create this hook next
 
 const DashboardLayout = () => {
-    const { logOut } = useContext(AuthContext);
-    const [role] = useRole(); // Assuming this hook returns [role, isLoading]
-    // const role = 'super-admin'; // TEMPORARY FOR VERIFICATION
+    const { user, logOut } = useContext(AuthContext);
+    const [role, isRoleLoading] = useRole();
+    console.log("DashboardLayout - Role:", role, "Loading:", isRoleLoading);
 
-    // Sidebar items based on role
+    if (isRoleLoading) {
+        return (
+            <div className="min-h-screen flex justify-center items-center">
+                <span className="loading loading-spinner loading-lg text-primary"></span>
+            </div>
+        );
+    }
+
+    // Sidebar items based on role (normalized to lowercase)
+    const normalizedRole = role?.toLowerCase()?.trim();
+    
     const navItems = <>
         {/* Common Items */}
         <li>
@@ -24,7 +34,7 @@ const DashboardLayout = () => {
         </li>
 
         {/* Borrower Items */}
-        {role === 'borrower' && (
+        {normalizedRole === 'borrower' && (
             <>
                 <li>
                     <NavLink to="/dashboard/my-loans">
@@ -40,7 +50,7 @@ const DashboardLayout = () => {
         )}
 
         {/* Manager Items */}
-        {role === 'manager' && (
+        {normalizedRole === 'manager' && (
             <>
                 <li>
                     <NavLink to="/dashboard/add-loan">
@@ -66,7 +76,7 @@ const DashboardLayout = () => {
         )}
 
         {/* Admin Items */}
-        {role === 'admin' && (
+        {normalizedRole === 'admin' && (
             <>
                 <li>
                     <NavLink to="/dashboard/manage-users">
@@ -87,7 +97,7 @@ const DashboardLayout = () => {
         )}
 
         {/* Super Admin Items */}
-        {role === 'super-admin' && (
+        {normalizedRole === 'super-admin' && (
             <>
                 <li>
                     <NavLink to="/dashboard/super-home">
@@ -145,7 +155,10 @@ const DashboardLayout = () => {
                         <Link to="/" className="text-2xl font-bold text-primary flex items-center gap-2">
                              <img src="/logo.png" className="w-8 h-8"/> LoanLink
                         </Link>
-                        <div className="badge badge-secondary mt-2 uppercase">{role || 'User'}</div>
+                        <div className="mt-2 flex flex-col gap-1">
+                            <div className="badge badge-secondary uppercase font-bold px-4 py-3">{role}</div>
+                            <div className="text-[10px] opacity-50 px-1 truncate">{user?.email}</div>
+                        </div>
                     </div>
                     {navItems}
                 </ul>

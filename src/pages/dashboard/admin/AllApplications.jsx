@@ -47,7 +47,7 @@ const AllApplications = () => {
                     <h1 className="text-3xl font-bold flex items-center gap-3">
                         <FaFileAlt className="text-secondary" /> Loan Applications
                     </h1>
-                    <p className="text-gray-500 mt-1">Monitor and review all loan requests in the system.</p>
+                    <p className="opacity-70 mt-1">Monitor and review all loan requests in the system.</p>
                 </div>
                 
                 <div className="flex gap-4 w-full md:w-auto">
@@ -67,7 +67,7 @@ const AllApplications = () => {
             </div>
 
             {/* Table */}
-            <div className="overflow-x-auto bg-white shadow-xl rounded-2xl border border-gray-100">
+            <div className="overflow-x-auto bg-base-100 shadow-xl rounded-2xl border border-base-200">
                 <table className="table w-full">
                     <thead className="bg-base-200">
                         <tr>
@@ -89,28 +89,28 @@ const AllApplications = () => {
                         ) : applications.length === 0 ? (
                             <tr>
                                 <td colSpan="6" className="text-center py-20">
-                                    <div className="text-gray-400 italic">No applications found matching the criteria.</div>
+                                    <div className="opacity-40 italic">No applications found matching the criteria.</div>
                                 </td>
                             </tr>
                         ) : (
-                            applications.map((app) => (
-                                <tr key={app._id} className="hover:bg-base-50 transition-colors">
-                                    <td className="font-mono text-xs text-gray-500">#{app._id.slice(-6).toUpperCase()}</td>
+                                    applications.map((app) => (
+                                <tr key={app._id} className="hover:bg-base-200 transition-colors">
+                                    <td className="font-mono text-xs opacity-50">#{app._id.slice(-6).toUpperCase()}</td>
                                     <td>
                                         <div className="flex items-center gap-3">
                                             <div className="avatar placeholder">
                                                 <div className="bg-neutral text-neutral-content rounded-full w-8">
-                                                    <span className="text-xs">{app.applicantName?.charAt(0)}</span>
+                                                    <span className="text-xs">{app.userId?.name?.charAt(0)}</span>
                                                 </div>
                                             </div>
                                             <div>
-                                                <div className="font-bold">{app.applicantName}</div>
-                                                <div className="text-xs opacity-50">{app.applicantEmail}</div>
+                                                <div className="font-bold">{app.userId?.name}</div>
+                                                <div className="text-xs opacity-50">{app.userId?.email}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
-                                        <span className="badge badge-sm badge-outline uppercase font-medium">{app.loanCategory}</span>
+                                        <span className="badge badge-sm badge-outline uppercase font-medium">{app.loanId?.category}</span>
                                     </td>
                                     <td className="font-bold text-primary">${app.loanAmount?.toLocaleString()}</td>
                                     <td>
@@ -140,7 +140,7 @@ const AllApplications = () => {
             {/* View Modal */}
             {isModalOpen && selectedApp && (
                 <div className={`modal modal-open`}>
-                    <div className="modal-box w-11/12 max-w-4xl rounded-2xl">
+                    <div className="modal-box w-11/12 max-w-4xl rounded-2xl bg-base-100 text-base-content">
                         <button onClick={() => setIsModalOpen(false)} className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4">✕</button>
                         <h3 className="font-bold text-2xl mb-6 text-primary flex items-center gap-2">
                             <FaFileAlt /> Application Details
@@ -149,20 +149,20 @@ const AllApplications = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
                                 <div className="bg-base-200 p-4 rounded-xl">
-                                    <h4 className="font-bold text-sm text-gray-500 uppercase mb-3 flex items-center gap-2">
+                                    <h4 className="font-bold text-sm opacity-50 uppercase mb-3 flex items-center gap-2">
                                         <FaUser /> Applicant Information
                                     </h4>
                                     <div className="space-y-2">
-                                        <p><span className="font-medium">Name:</span> {selectedApp.applicantName}</p>
-                                        <p><span className="font-medium">Email:</span> {selectedApp.applicantEmail}</p>
+                                        <p><span className="font-medium">Name:</span> {selectedApp.userId?.name}</p>
+                                        <p><span className="font-medium">Email:</span> {selectedApp.userId?.email}</p>
                                         <p><span className="font-medium">Contact:</span> {selectedApp.contactNumber}</p>
-                                        <p><span className="font-medium">NID/Passport:</span> {selectedApp.idNumber}</p>
+                                        <p><span className="font-medium">NID/Passport:</span> {selectedApp.nationalId}</p>
                                         <p><span className="font-medium">Address:</span> {selectedApp.address}</p>
                                     </div>
                                 </div>
 
                                 <div className="bg-base-200 p-4 rounded-xl">
-                                    <h4 className="font-bold text-sm text-gray-500 uppercase mb-3">Financial Context</h4>
+                                    <h4 className="font-bold text-sm opacity-50 uppercase mb-3">Financial Context</h4>
                                     <div className="space-y-2">
                                         <p><span className="font-medium">Income Source:</span> {selectedApp.incomeSource}</p>
                                         <p><span className="font-medium">Monthly Income:</span> ${selectedApp.monthlyIncome?.toLocaleString()}</p>
@@ -174,19 +174,19 @@ const AllApplications = () => {
                                 <div className="bg-primary/5 p-4 rounded-xl border border-primary/20">
                                     <h4 className="font-bold text-sm text-primary uppercase mb-3">Loan Details</h4>
                                     <div className="space-y-2">
-                                        <p><span className="font-medium">Program:</span> {selectedApp.loanTitle}</p>
-                                        <p><span className="font-medium">Category:</span> {selectedApp.loanCategory}</p>
+                                        <p><span className="font-medium">Program:</span> {selectedApp.loanId?.title}</p>
+                                        <p><span className="font-medium">Category:</span> {selectedApp.loanId?.category}</p>
                                         <p><span className="font-medium text-lg">Requested Amount:</span> <span className="text-xl font-bold text-primary">${selectedApp.loanAmount?.toLocaleString()}</span></p>
-                                        <p><span className="font-medium">Interest Rate:</span> {selectedApp.interestRate}%</p>
+                                        <p><span className="font-medium">Interest Rate:</span> {selectedApp.loanId?.interestRate}%</p>
                                     </div>
                                 </div>
 
                                 <div className="bg-base-200 p-4 rounded-xl">
-                                    <h4 className="font-bold text-sm text-gray-500 uppercase mb-3">Reason & Notes</h4>
-                                    <p className="text-sm italic">"{selectedApp.reason}"</p>
+                                    <h4 className="font-bold text-sm opacity-50 uppercase mb-3">Reason & Notes</h4>
+                                    <p className="text-sm italic">"{selectedApp.reasonForLoan}"</p>
                                     {selectedApp.extraNotes && (
-                                        <div className="mt-3 pt-3 border-t border-gray-300">
-                                            <p className="text-xs font-bold text-gray-400 uppercase">Extra Notes:</p>
+                                        <div className="mt-3 pt-3 border-t border-base-300">
+                                            <p className="text-xs font-bold opacity-40 uppercase">Extra Notes:</p>
                                             <p className="text-sm">{selectedApp.extraNotes}</p>
                                         </div>
                                     )}
@@ -199,7 +199,7 @@ const AllApplications = () => {
                                     }`}>
                                         STATUS: {selectedApp.status.toUpperCase()}
                                     </div>
-                                    <div className="text-xs text-gray-400">
+                                    <div className="text-xs opacity-40">
                                         Applied on: {new Date(selectedApp.createdAt).toLocaleDateString()}
                                     </div>
                                 </div>

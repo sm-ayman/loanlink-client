@@ -112,7 +112,7 @@ const ApprovedApplications = () => {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold text-primary">Approved Applications</h1>
-          <p className="text-gray-600 mt-1">Track approved loan applications and their payment status</p>
+          <p className="opacity-70 mt-1">Track approved loan applications and their payment status</p>
         </div>
         <div className="stats shadow">
           <div className="stat">
@@ -128,12 +128,12 @@ const ApprovedApplications = () => {
       {applications.length === 0 ? (
         <div className="text-center py-16">
           <div className="text-6xl mb-4">✅</div>
-          <h2 className="text-2xl font-bold text-gray-700 mb-2">No Approved Applications</h2>
-          <p className="text-gray-500">Approved applications will appear here</p>
+          <h2 className="text-2xl font-bold mb-2">No Approved Applications</h2>
+          <p className="opacity-60">Approved applications will appear here</p>
         </div>
       ) : (
         <>
-          <div className="bg-base-100 shadow-xl rounded-lg overflow-hidden">
+          <div className="bg-base-100 shadow-xl rounded-lg overflow-hidden border border-base-200">
             <div className="overflow-x-auto">
               <table className="table table-zebra w-full">
                 <thead className="bg-base-200">
@@ -154,7 +154,7 @@ const ApprovedApplications = () => {
                       <td className="font-medium">
                         {(currentPage - 1) * limit + index + 1}
                       </td>
-                      <td className="font-mono text-sm">
+                      <td className="font-mono text-sm opacity-70">
                         {application._id.slice(-8).toUpperCase()}
                       </td>
                       <td>
@@ -165,26 +165,26 @@ const ApprovedApplications = () => {
                             </div>
                           </div>
                           <div>
-                            <div className="font-medium">{application.userId.name}</div>
-                            <div className="text-sm text-gray-500">{application.userId.email}</div>
+                            <div className="font-medium">{application.userId?.name}</div>
+                            <div className="text-sm opacity-60">{application.userId?.email}</div>
                           </div>
                         </div>
                       </td>
                       <td>
                         <div>
-                          <div className="font-medium">{application.loanId.title}</div>
-                          <div className="text-sm text-gray-500">{application.loanId.category}</div>
+                          <div className="font-medium">{application.loanId?.title}</div>
+                          <div className="text-sm opacity-60">{application.loanId?.category}</div>
                         </div>
                       </td>
                       <td>
                         <div className="flex items-center gap-2">
                           <FaMoneyBillWave className="text-green-500" />
-                          <span className="font-semibold">${application.loanAmount}</span>
+                          <span className="font-semibold">${application.loanAmount?.toLocaleString()}</span>
                         </div>
                       </td>
                       <td>
                         <div className="flex items-center gap-2">
-                          <FaCalendar className="text-success" />
+                          <FaCalendar className="text-success opacity-70" />
                           <span className="text-sm">
                             {new Date(application.approvedAt).toLocaleDateString()}
                           </span>

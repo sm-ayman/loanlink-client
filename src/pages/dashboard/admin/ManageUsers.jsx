@@ -218,14 +218,14 @@ const ManageUsers = () => {
             {users.length === 0 ? (
                 <div className="text-center py-16">
                     <div className="text-6xl mb-4">👥</div>
-                    <h2 className="text-2xl font-bold text-gray-700 mb-2">No Users Found</h2>
-                    <p className="text-gray-500">
+                    <h2 className="text-2xl font-bold mb-2">No Users Found</h2>
+                    <p className="opacity-60">
                         {searchTerm || selectedRole ? 'Try adjusting your search or filter criteria' : 'No users registered yet'}
                     </p>
                 </div>
             ) : (
                 <>
-                    <div className="overflow-x-auto bg-white shadow-xl rounded-xl border border-gray-100">
+                    <div className="overflow-x-auto bg-base-100 shadow-xl rounded-xl border border-base-200">
                         <table className="table w-full">
                             <thead className="bg-base-200">
                                 <tr>
@@ -238,7 +238,7 @@ const ManageUsers = () => {
                             </thead>
                             <tbody>
                                 {users.map((user, index) => (
-                                    <tr key={user._id} className="hover:bg-base-50 transition-colors">
+                                    <tr key={user._id} className="hover:bg-base-200 transition-colors">
                                         <th>{(currentPage - 1) * limit + index + 1}</th>
                                         <td>
                                             <div className="flex items-center space-x-3">

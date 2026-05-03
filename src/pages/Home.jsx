@@ -45,10 +45,10 @@ const Home = () => {
 
              {/* Extra Section 2: Newsletter/CTA */}
              <section className="py-16 bg-base-100">
-                <div className="max-w-screen-xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8 bg-gray-50 rounded-2xl p-10 shadow-inner">
+                <div className="max-w-screen-xl mx-auto px-4 flex flex-col md:flex-row items-center justify-between gap-8 bg-base-200 rounded-2xl p-10 shadow-inner">
                     <div className="flex-1">
                         <h2 className="text-3xl font-bold mb-4">Stay Updated with Financial Tips</h2>
-                        <p className="text-gray-600">Subscribe to our newsletter to get the latest updates on loan interest rates, financial advice, and special offers.</p>
+                        <p className="opacity-70">Subscribe to our newsletter to get the latest updates on loan interest rates, financial advice, and special offers.</p>
                     </div>
                     <div className="flex-1 w-full max-w-md">
                         <div className="join w-full">

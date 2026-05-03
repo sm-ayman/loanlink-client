@@ -7,29 +7,13 @@ import { authAPI } from "../utils/api";
 import { Helmet } from "react-helmet-async";
 
 const Register = () => {
-    const { createUser, updateUserProfile } = useContext(AuthContext);
+    const { signUp } = useContext(AuthContext);
     const { register, handleSubmit, formState: { errors } } = useForm();
     const navigate = useNavigate();
     
     const onSubmit = async (data) => {
         try {
-            // First create user in Firebase
-            const result = await createUser(data.email, data.password);
-
-            // Update Firebase profile
-            await updateUserProfile(data.name, data.photoURL || '');
-
-            // Sync with backend
-            const userData = {
-                uid: result.user.uid,
-                email: data.email,
-                name: data.name,
-                photoURL: data.photoURL || '',
-                role: data.role || 'borrower'
-            };
-
-            await authAPI.registerFromFirebase(userData);
-
+            await signUp(data.name, data.email, data.password, data.role, data.photoURL);
             toast.success('Registration Successful');
             navigate('/dashboard');
         } catch (error) {
