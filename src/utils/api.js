@@ -153,6 +153,12 @@ export const loanAPI = {
     const response = await api.get('/loans/my/loans');
     return response.data;
   },
+
+  // Duplicate loan
+  duplicateLoan: async (loanId) => {
+    const response = await api.post(`/loans/${loanId}/duplicate`);
+    return response.data;
+  },
 };
 
 // Application API calls
