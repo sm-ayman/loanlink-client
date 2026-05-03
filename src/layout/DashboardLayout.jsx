@@ -41,11 +41,6 @@ const DashboardLayout = () => {
                         <FaHistory /> My Loans
                     </NavLink>
                 </li>
-                 <li>
-                    <NavLink to="/dashboard/my-applications">
-                        <FaFileInvoiceDollar /> My Applications
-                    </NavLink>
-                </li>
             </>
         )}
 
