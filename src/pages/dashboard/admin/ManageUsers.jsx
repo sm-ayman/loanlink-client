@@ -140,6 +140,31 @@ const ManageUsers = () => {
         }
     };
 
+    const handleDeleteUser = async (user) => {
+        const result = await Swal.fire({
+            title: "Delete User Account?",
+            text: `Are you sure you want to delete ${user.name}'s account? This will permanently suspend the user.`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#EF4444",
+            cancelButtonColor: "#6B7280",
+            confirmButtonText: "Yes, Delete",
+            cancelButtonText: "Cancel"
+        });
+
+        if (result.isConfirmed) {
+            try {
+                const response = await userAPI.deleteUser(user._id);
+                if (response.success) {
+                    toast.success("User account deleted successfully!");
+                    loadUsers();
+                }
+            } catch (err) {
+                toast.error(err.response?.data?.message || "Failed to delete user");
+            }
+        }
+    };
+
     const totalPages = Math.ceil(totalUsers / limit);
     const pagination = {
         currentPage,
@@ -298,7 +323,12 @@ const ManageUsers = () => {
                                                 >
                                                     <FaBan />
                                                 </button>
-                                                <button className="btn btn-sm btn-circle btn-ghost text-gray-500 tooltip" data-tip="Delete User (Not implemented)">
+                                                <button 
+                                                    onClick={() => handleDeleteUser(user)}
+                                                    className="btn btn-sm btn-circle btn-ghost text-error tooltip" 
+                                                    data-tip="Delete User"
+                                                    disabled={user.role === 'admin'}
+                                                >
                                                     <FaTrash />
                                                 </button>
                                             </div>

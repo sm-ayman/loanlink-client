@@ -100,6 +100,12 @@ export const userAPI = {
     const response = await api.get('/users/stats');
     return response.data;
   },
+
+  // Delete user (admin only)
+  deleteUser: async (userId) => {
+    const response = await api.delete(`/users/${userId}`);
+    return response.data;
+  },
 };
 
 // Loan API calls
