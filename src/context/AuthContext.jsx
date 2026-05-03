@@ -89,11 +89,12 @@ const AuthProvider = ({ children }) => {
         'admin@loanlink.com': { uid: 'admin-123', name: 'System Admin', role: 'admin' },
         'manager1@loanlink.com': { uid: 'manager-123', name: 'Loan Manager 1', role: 'manager' },
         'manager2@loanlink.com': { uid: 'manager-456', name: 'Loan Manager 2', role: 'manager' },
+        'manager@gamil.com': { uid: 'manager-gamil', name: 'Loan Manager', role: 'manager' },
         'borrower1@loanlink.com': { uid: 'borrower-123', name: 'John Borrower', role: 'borrower' },
         'borrower2@loanlink.com': { uid: 'borrower-456', name: 'Jane Borrower', role: 'borrower' }
     };
 
-    if (testAccounts[email] && password === (email.includes('admin') ? 'admin123' : email.includes('manager') ? 'manager123' : 'borrower123')) {
+    if (testAccounts[email] && (password === (email.includes('admin') ? 'admin123' : email.includes('manager1') ? 'manager123' : email.includes('manager2') ? 'manager123' : email === 'manager@gamil.com' ? 'Manager#123' : 'borrower123'))) {
         return new Promise((resolve) => {
             const acc = testAccounts[email];
             const fakeUser = {
