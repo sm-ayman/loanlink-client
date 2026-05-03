@@ -81,11 +81,9 @@ const Navbar = () => {
             {navOptions}
           </ul>
         </div>
-        <Link to="/" className="btn btn-ghost normal-case text-xl text-primary font-bold">
-          <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center mr-1 hidden sm:flex">
-             <span className="text-xl">L</span>
-          </div>
-          LoanLink
+        <Link to="/" className="btn btn-ghost normal-case text-xl text-primary font-bold px-0 hover:bg-transparent">
+          <img src="/logo.png" alt="LoanLink Logo" className="h-10 w-auto" />
+          <span className="ml-1">LoanLink</span>
         </Link>
       </div>
       <div className="navbar-center hidden lg:flex">
