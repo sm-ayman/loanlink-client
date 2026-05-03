@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { FaUsers, FaMoneyBillWave, FaServer, FaExclamationTriangle, FaChartPie, FaChartLine } from "react-icons/fa";
-import { userAPI, paymentAPI } from "../../../utils/api";
+import { FaUsers, FaMoneyBillWave, FaServer, FaExclamationTriangle, FaChartPie, FaChartLine, FaHistory } from "react-icons/fa";
+import { userAPI, paymentAPI, applicationAPI } from "../../../utils/api";
 import toast from "react-hot-toast";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Helmet } from "react-helmet-async";
@@ -10,14 +10,16 @@ const SuperAdminDashboard = () => {
     const [loading, setLoading] = useState(true);
     const [chartData, setChartData] = useState([]);
     const [revenueData, setRevenueData] = useState([]);
+    const [recentApps, setRecentApps] = useState([]);
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 setLoading(true);
-                const [userStatsRes, paymentStatsRes] = await Promise.all([
+                const [userStatsRes, paymentStatsRes, recentAppsRes] = await Promise.all([
                     userAPI.getUserStats(),
-                    paymentAPI.getPaymentStats()
+                    paymentAPI.getPaymentStats(),
+                    applicationAPI.getRecentApplications()
                 ]);
 
                 if (userStatsRes.success && paymentStatsRes.success) {
@@ -68,18 +70,17 @@ const SuperAdminDashboard = () => {
                         revenue: item.total
                     })).reverse() || [];
                     
-                    // Fallback if no data
                     if (revData.length === 0) {
                         setRevenueData([
-                            { month: 'Jan', revenue: 0 },
-                            { month: 'Feb', revenue: 10 },
-                            { month: 'Mar', revenue: 20 },
-                            { month: 'Apr', revenue: 50 },
-                            { month: 'May', revenue: 30 }
+                            { month: 'Jan', revenue: 0 }, { month: 'Feb', revenue: 10 }, { month: 'Mar', revenue: 20 }, { month: 'Apr', revenue: 50 }, { month: 'May', revenue: 30 }
                         ]);
                     } else {
                         setRevenueData(revData);
                     }
+                }
+
+                if (recentAppsRes.success) {
+                    setRecentApps(recentAppsRes.data.applications);
                 }
             } catch (err) {
                 console.error("Error fetching stats:", err);
@@ -183,23 +184,27 @@ const SuperAdminDashboard = () => {
                     </div>
                 </div>
 
-                {/* Recent Activity */}
+                {/* Recent Activity Feed */}
                 <div className="card bg-base-100 shadow-xl border border-base-200">
                     <div className="card-body">
-                        <h2 className="card-title mb-4 text-lg">System Health</h2>
+                        <h2 className="card-title mb-4 text-lg flex items-center gap-2">
+                            <FaHistory className="text-accent" /> Recent Activity
+                        </h2>
                         <div className="space-y-4">
-                            <div className="flex items-center justify-between p-3 bg-success/10 rounded-xl">
-                                <span className="font-medium text-success">Auth Server</span>
-                                <span className="badge badge-success text-white">Online</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-success/10 rounded-xl">
-                                <span className="font-medium text-success">Database</span>
-                                <span className="badge badge-success text-white">Online</span>
-                            </div>
-                            <div className="flex items-center justify-between p-3 bg-warning/10 rounded-xl">
-                                <span className="font-medium text-warning">Storage</span>
-                                <span className="badge badge-warning text-white">85% Full</span>
-                            </div>
+                            {recentApps.length > 0 ? (
+                                recentApps.map((app) => (
+                                    <div key={app._id} className="flex flex-col gap-1 p-3 bg-base-200 rounded-xl hover:bg-base-300 transition-colors">
+                                        <div className="flex justify-between items-center">
+                                            <span className="font-bold text-xs truncate max-w-[120px]">{app.userId?.name}</span>
+                                            <span className={`badge badge-xs ${app.status === 'pending' ? 'badge-warning' : app.status === 'approved' ? 'badge-success' : 'badge-error'}`}>{app.status}</span>
+                                        </div>
+                                        <p className="text-[10px] opacity-60">Applied for {app.loanId?.title}</p>
+                                        <p className="text-[9px] opacity-40 self-end">{new Date(app.createdAt).toLocaleDateString()}</p>
+                                    </div>
+                                ))
+                            ) : (
+                                <p className="text-center py-10 opacity-50 text-sm italic">No recent activity found</p>
+                            )}
                         </div>
                     </div>
                 </div>
