@@ -6,7 +6,9 @@ const Footer = () => {
         <footer className="bg-base-200">
             <div className="footer p-10 text-base-content max-w-screen-2xl mx-auto">
                 <aside>
-                    <Link to="/" className="text-2xl font-bold text-primary mb-2">LoanLink</Link>
+                    <Link to="/" className="mb-4 block">
+                        <img src="/logo.png" alt="LoanLink Logo" className="h-16 w-auto" />
+                    </Link>
                     <p className="max-w-xs">
                         LoanLink connects borrowers with lenders offering simplified microloan request and management solutions.
                     </p>
