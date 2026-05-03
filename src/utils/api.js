@@ -124,13 +124,15 @@ export const loanAPI = {
 
   // Create loan (manager/admin only)
   createLoan: async (loanData) => {
-    const response = await api.post('/loans', loanData);
+    const config = loanData instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+    const response = await api.post('/loans', loanData, config);
     return response.data;
   },
 
   // Update loan (manager/admin only)
   updateLoan: async (loanId, updateData) => {
-    const response = await api.put(`/loans/${loanId}`, updateData);
+    const config = updateData instanceof FormData ? { headers: { 'Content-Type': 'multipart/form-data' } } : {};
+    const response = await api.put(`/loans/${loanId}`, updateData, config);
     return response.data;
   },
 

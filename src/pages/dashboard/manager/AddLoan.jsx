@@ -13,21 +13,28 @@ const AddLoan = () => {
         try {
             setIsSubmitting(true);
             
-            // Format data to match backend schema expectations
-            const loanData = {
-                title: data.title,
-                category: data.category.toLowerCase(), // Backend expects lowercase enum
-                interestRate: parseFloat(data.interestRate),
-                maxLoanLimit: parseFloat(data.maxAmount), // Backend expects maxLoanLimit, not maxAmount
-                description: data.description,
-                images: ["https://via.placeholder.com/600x400?text=" + encodeURIComponent(data.title)], // Placeholder image
-                showOnHome: data.showOnHome === 'true',
-                // Optional fields with defaults
-                requiredDocuments: ["Valid ID", "Proof of Income", "Proof of Address"],
-                emiPlans: ["3 Months", "6 Months", "12 Months"]
-            };
+            const formData = new FormData();
+            formData.append('title', data.title);
+            formData.append('category', data.category.toLowerCase());
+            formData.append('interestRate', parseFloat(data.interestRate));
+            formData.append('maxLoanLimit', parseFloat(data.maxAmount));
+            formData.append('description', data.description);
+            formData.append('showOnHome', data.showOnHome === 'true' || data.showOnHome === true);
+            
+            // Optional fields with defaults (backend expects array notation)
+            formData.append('requiredDocuments[]', "Valid ID");
+            formData.append('requiredDocuments[]', "Proof of Income");
+            formData.append('requiredDocuments[]', "Proof of Address");
+            formData.append('emiPlans[]', "3 Months");
+            formData.append('emiPlans[]', "6 Months");
+            formData.append('emiPlans[]', "12 Months");
 
-            const response = await loanAPI.createLoan(loanData);
+            // Append image file if selected
+            if (data.image && data.image.length > 0) {
+                formData.append('images', data.image[0]);
+            }
+
+            const response = await loanAPI.createLoan(formData);
             
             if (response.success) {
                 toast.success("Loan Added Successfully!");
@@ -114,11 +121,24 @@ const AddLoan = () => {
                         ></textarea>
                     </div>
                     
-                    <div className="form-control mt-4 w-fit">
-                        <label className="cursor-pointer label justify-start gap-4">
-                            <span className="label-text">Show on Home Page?</span> 
-                            <input type="checkbox" className="toggle toggle-primary" {...register("showOnHome")} value="true" />
-                        </label>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 items-center">
+                        <div className="form-control w-fit">
+                            <label className="cursor-pointer label justify-start gap-4">
+                                <span className="label-text font-semibold">Show on Home Page?</span> 
+                                <input type="checkbox" className="toggle toggle-primary" {...register("showOnHome")} value="true" />
+                            </label>
+                        </div>
+                        <div className="form-control">
+                            <label className="label">
+                                <span className="label-text font-semibold">Upload Loan Image (Optional)</span>
+                            </label>
+                            <input 
+                                type="file" 
+                                className="file-input file-input-bordered w-full" 
+                                accept="image/*"
+                                {...register("image")} 
+                            />
+                        </div>
                     </div>
 
                     <div className="form-control mt-6">

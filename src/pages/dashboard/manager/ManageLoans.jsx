@@ -322,15 +322,20 @@ const EditLoanModal = ({ loan, onClose, onSuccess }) => {
   });
 
   const onSubmit = (data) => {
-    const loanData = {
-      title: data.title,
-      category: data.category.toLowerCase(),
-      interestRate: parseFloat(data.interestRate),
-      maxLoanLimit: parseFloat(data.maxAmount),
-      description: data.description,
-      showOnHome: data.showOnHome === 'true' || data.showOnHome === true
-    };
-    updateMutation.mutate(loanData);
+    const formData = new FormData();
+    formData.append('title', data.title);
+    formData.append('category', data.category.toLowerCase());
+    formData.append('interestRate', parseFloat(data.interestRate));
+    formData.append('maxLoanLimit', parseFloat(data.maxAmount));
+    formData.append('description', data.description);
+    formData.append('showOnHome', data.showOnHome === 'true' || data.showOnHome === true);
+
+    // Append image file if selected
+    if (data.image && data.image.length > 0) {
+        formData.append('images', data.image[0]);
+    }
+
+    updateMutation.mutate(formData);
   };
 
   return (
@@ -366,12 +371,27 @@ const EditLoanModal = ({ loan, onClose, onSuccess }) => {
             <label className="label"><span className="label-text">Description</span></label>
             <textarea className="textarea textarea-bordered h-24" {...register("description", { required: true })}></textarea>
           </div>
-          <div className="form-control mt-4 w-fit">
-            <label className="cursor-pointer label gap-4">
-              <span className="label-text">Show on Home Page?</span>
-              <input type="checkbox" className="toggle toggle-primary" {...register("showOnHome")} />
-            </label>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4 items-center">
+              <div className="form-control w-fit">
+                  <label className="cursor-pointer label justify-start gap-4">
+                      <span className="label-text font-semibold">Show on Home Page?</span>
+                      <input type="checkbox" className="toggle toggle-primary" {...register("showOnHome")} />
+                  </label>
+              </div>
+              <div className="form-control">
+                  <label className="label">
+                      <span className="label-text font-semibold">Update Image (Optional)</span>
+                  </label>
+                  <input 
+                      type="file" 
+                      className="file-input file-input-bordered w-full" 
+                      accept="image/*"
+                      {...register("image")} 
+                  />
+              </div>
           </div>
+
           <div className="flex justify-end gap-2 mt-6">
             <button type="button" onClick={onClose} className="btn btn-ghost">Cancel</button>
             <button type="submit" className="btn btn-primary" disabled={updateMutation.isPending}>
