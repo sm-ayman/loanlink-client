@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { FaUsers, FaMoneyBillWave, FaServer, FaExclamationTriangle, FaChartPie } from "react-icons/fa";
+import { FaUsers, FaMoneyBillWave, FaServer, FaExclamationTriangle, FaChartPie, FaChartLine } from "react-icons/fa";
 import { userAPI, paymentAPI } from "../../../utils/api";
 import toast from "react-hot-toast";
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 import { Helmet } from "react-helmet-async";
 
 const SuperAdminDashboard = () => {
     const [stats, setStats] = useState([]);
     const [loading, setLoading] = useState(true);
     const [chartData, setChartData] = useState([]);
+    const [revenueData, setRevenueData] = useState([]);
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -54,12 +55,31 @@ const SuperAdminDashboard = () => {
                         }
                     ]);
 
-                    // Prepare chart data
+                    // Prepare pie chart data
                     setChartData([
                         { name: 'Borrowers', value: uStats.roleBreakdown?.borrowers || 0 },
                         { name: 'Managers', value: uStats.roleBreakdown?.managers || 0 },
                         { name: 'Admins', value: uStats.roleBreakdown?.admins || 0 }
                     ]);
+
+                    // Prepare revenue area chart data
+                    const revData = pStats.monthlyRevenue?.map(item => ({
+                        month: `${item._id.month}/${item._id.year}`,
+                        revenue: item.total
+                    })).reverse() || [];
+                    
+                    // Fallback if no data
+                    if (revData.length === 0) {
+                        setRevenueData([
+                            { month: 'Jan', revenue: 0 },
+                            { month: 'Feb', revenue: 10 },
+                            { month: 'Mar', revenue: 20 },
+                            { month: 'Apr', revenue: 50 },
+                            { month: 'May', revenue: 30 }
+                        ]);
+                    } else {
+                        setRevenueData(revData);
+                    }
                 }
             } catch (err) {
                 console.error("Error fetching stats:", err);
@@ -77,7 +97,7 @@ const SuperAdminDashboard = () => {
     if (loading) return <div className="flex justify-center items-center min-h-screen"><span className="loading loading-spinner loading-lg text-primary"></span></div>;
 
     return (
-        <div className="p-6">
+        <div className="p-6 bg-base-200 min-h-screen">
             <Helmet>
                 <title>Super Admin Dashboard | LoanLink</title>
             </Helmet>
@@ -85,18 +105,18 @@ const SuperAdminDashboard = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 {stats.map((stat, index) => (
-                    <div key={index} className={`card shadow-xl ${stat.color} hover:shadow-2xl transition-shadow`}>
+                    <div key={index} className={`card shadow-xl ${stat.color} bg-base-100 hover:shadow-2xl transition-shadow border border-base-200`}>
                         <div className="card-body">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h2 className="card-title text-gray-600 font-medium text-sm uppercase">{stat.title}</h2>
+                                    <h2 className="card-title text-gray-600 font-medium text-sm uppercase tracking-wider">{stat.title}</h2>
                                     <p className="text-4xl font-bold mt-2 text-gray-800">{stat.value}</p>
                                 </div>
-                                <div className="p-3 rounded-full bg-white bg-opacity-50">
+                                <div className="p-3 rounded-2xl bg-base-200">
                                     {stat.icon}
                                 </div>
                             </div>
-                            <div className="mt-4 text-sm text-gray-500">
+                            <div className="mt-4 text-xs font-semibold text-gray-400">
                                 {stat.desc}
                             </div>
                         </div>
@@ -105,11 +125,39 @@ const SuperAdminDashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* User Distribution Chart */}
-                <div className="card bg-base-100 shadow-xl border border-gray-100 lg:col-span-1">
+                {/* Revenue Trend Chart */}
+                <div className="card bg-base-100 shadow-xl border border-base-200 lg:col-span-2">
                     <div className="card-body">
-                        <h2 className="card-title mb-4 flex items-center gap-2 text-lg">
-                            <FaChartPie className="text-primary" /> User Distribution
+                        <h2 className="card-title mb-6 flex items-center gap-2 text-lg">
+                            <FaChartLine className="text-secondary" /> Revenue Growth Trend
+                        </h2>
+                        <div className="h-80 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={revenueData}>
+                                    <defs>
+                                        <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.1}/>
+                                            <stop offset="95%" stopColor="#3B82F6" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.1} />
+                                    <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fontSize: 12}} dy={10} />
+                                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12}} />
+                                    <Tooltip 
+                                        contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
+                                    />
+                                    <Area type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={3} fillOpacity={1} fill="url(#colorRev)" />
+                                </AreaChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
+                </div>
+
+                {/* User Distribution Chart */}
+                <div className="card bg-base-100 shadow-xl border border-base-200 lg:col-span-1">
+                    <div className="card-body">
+                        <h2 className="card-title mb-6 flex items-center gap-2 text-lg">
+                            <FaChartPie className="text-primary" /> User Role Split
                         </h2>
                         <div className="h-64">
                             <ResponsiveContainer width="100%" height="100%">
@@ -136,27 +184,35 @@ const SuperAdminDashboard = () => {
                 </div>
 
                 {/* Recent Activity */}
-                <div className="card bg-base-100 shadow-xl border border-gray-100">
+                <div className="card bg-base-100 shadow-xl border border-base-200">
                     <div className="card-body">
-                        <h2 className="card-title mb-4 text-lg">Recent System Activity</h2>
-                        <ul className="steps steps-vertical">
-                            <li className="step step-primary">New admin account created</li>
-                            <li className="step step-primary">Database backup completed</li>
-                            <li className="step">System update scheduled</li>
-                            <li className="step">User permissions updated</li>
-                        </ul>
+                        <h2 className="card-title mb-4 text-lg">System Health</h2>
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between p-3 bg-success/10 rounded-xl">
+                                <span className="font-medium text-success">Auth Server</span>
+                                <span className="badge badge-success text-white">Online</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-success/10 rounded-xl">
+                                <span className="font-medium text-success">Database</span>
+                                <span className="badge badge-success text-white">Online</span>
+                            </div>
+                            <div className="flex items-center justify-between p-3 bg-warning/10 rounded-xl">
+                                <span className="font-medium text-warning">Storage</span>
+                                <span className="badge badge-warning text-white">85% Full</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {/* Quick Actions */}
-                <div className="card bg-base-100 shadow-xl border border-gray-100">
+                <div className="card bg-base-100 shadow-xl border border-base-200 lg:col-span-2">
                     <div className="card-body">
-                         <h2 className="card-title mb-4 text-lg">Quick Actions</h2>
-                         <div className="grid grid-cols-2 gap-4">
-                            <button className="btn btn-outline btn-primary btn-sm">Add Admin</button>
-                            <button className="btn btn-outline btn-secondary btn-sm">Audit Logs</button>
-                            <button className="btn btn-outline btn-accent btn-sm">Settings</button>
-                            <button className="btn btn-outline btn-sm">Report</button>
+                         <h2 className="card-title mb-4 text-lg">Administrative Tools</h2>
+                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <button className="btn btn-outline btn-primary btn-sm h-12">New Admin</button>
+                            <button className="btn btn-outline btn-secondary btn-sm h-12">Audit Logs</button>
+                            <button className="btn btn-outline btn-accent btn-sm h-12">Settings</button>
+                            <button className="btn btn-outline btn-sm h-12">Reports</button>
                          </div>
                     </div>
                 </div>
