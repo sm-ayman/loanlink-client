@@ -6,6 +6,7 @@ import { FaEdit, FaTrash, FaEye, FaSearch, FaPlus, FaImage, FaFileAlt, FaPercent
 import Swal from "sweetalert2";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { uploadImage } from "../../../utils/imageUpload";
 
 const ManageLoans = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -132,6 +133,12 @@ const ManageLoans = () => {
   // Get unique categories for filter dropdown
   const categories = [...new Set(loansData?.data?.loans?.map(loan => loan.category) || [])];
 
+  const getImageUrl = (image) => {
+    if (!image) return "https://via.placeholder.com/150?text=No+Image";
+    if (image.startsWith('http')) return image;
+    return `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${image}`;
+  };
+
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-96">
@@ -230,7 +237,7 @@ const ManageLoans = () => {
               <figure className="h-48">
                 {loan.images && loan.images.length > 0 ? (
                   <img
-                    src={loan.images[0]}
+                    src={getImageUrl(loan.images[0])}
                     alt={loan.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {
@@ -345,21 +352,36 @@ const EditLoanModal = ({ loan, onClose, onSuccess }) => {
     }
   });
 
-  const onSubmit = (data) => {
-    const formData = new FormData();
-    formData.append('title', data.title);
-    formData.append('category', data.category.toLowerCase());
-    formData.append('interestRate', parseFloat(data.interestRate));
-    formData.append('maxLoanLimit', parseFloat(data.maxAmount));
-    formData.append('description', data.description);
-    formData.append('showOnHome', data.showOnHome === 'true' || data.showOnHome === true);
+  const onSubmit = async (data) => {
+    try {
+        let imageUrls = loan.images || [];
+        
+        // Upload image to ImgBB if a new file is selected
+        if (data.image && data.image[0]) {
+            toast.loading('Uploading new image...', { id: 'upload' });
+            const url = await uploadImage(data.image[0]);
+            imageUrls = [url]; // For now we only support one image
+            toast.success('Image uploaded', { id: 'upload' });
+        }
 
-    // Append image file if selected
-    if (data.image && data.image.length > 0) {
-        formData.append('images', data.image[0]);
+        const formData = new FormData();
+        formData.append('title', data.title);
+        formData.append('category', data.category.toLowerCase());
+        formData.append('interestRate', parseFloat(data.interestRate));
+        formData.append('maxLoanLimit', parseFloat(data.maxAmount));
+        formData.append('description', data.description);
+        formData.append('showOnHome', data.showOnHome === 'true' || data.showOnHome === true);
+        
+        // Send images as an array in FormData
+        imageUrls.forEach(url => {
+            formData.append('images', url);
+        });
+
+        updateMutation.mutate(formData);
+    } catch (error) {
+        console.error("Image upload failed:", error);
+        toast.error("Failed to upload image", { id: 'upload' });
     }
-
-    updateMutation.mutate(formData);
   };
 
   return (

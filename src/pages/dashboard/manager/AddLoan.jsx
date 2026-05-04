@@ -3,6 +3,7 @@ import { useState } from "react";
 import { loanAPI } from "../../../utils/api";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
+import { uploadImage } from "../../../utils/imageUpload";
 
 const AddLoan = () => {
     const { register, handleSubmit, reset, formState: { errors } } = useForm();
@@ -13,6 +14,16 @@ const AddLoan = () => {
         try {
             setIsSubmitting(true);
             
+            let imageUrls = [];
+            
+            // Upload image to ImgBB if a file is selected
+            if (data.image && data.image[0]) {
+                toast.loading('Uploading image...', { id: 'upload' });
+                const url = await uploadImage(data.image[0]);
+                imageUrls.push(url);
+                toast.success('Image uploaded', { id: 'upload' });
+            }
+
             const formData = new FormData();
             formData.append('title', data.title);
             formData.append('category', data.category.toLowerCase());
@@ -21,18 +32,18 @@ const AddLoan = () => {
             formData.append('description', data.description);
             formData.append('showOnHome', data.showOnHome === 'true' || data.showOnHome === true);
             
-            // Optional fields with defaults (backend expects array notation)
+            // Send images as an array in FormData
+            imageUrls.forEach(url => {
+                formData.append('images', url);
+            });
+
+            // Default requirements and plans
             formData.append('requiredDocuments[]', "Valid ID");
             formData.append('requiredDocuments[]', "Proof of Income");
             formData.append('requiredDocuments[]', "Proof of Address");
             formData.append('emiPlans[]', "3 Months");
             formData.append('emiPlans[]', "6 Months");
             formData.append('emiPlans[]', "12 Months");
-
-            // Append image file if selected
-            if (data.image && data.image.length > 0) {
-                formData.append('images', data.image[0]);
-            }
 
             const response = await loanAPI.createLoan(formData);
             
@@ -46,7 +57,7 @@ const AddLoan = () => {
             const errorMsg = error.response?.data?.errors 
                 ? error.response.data.errors.map(e => e.message).join(' | ')
                 : error.response?.data?.message || "Failed to add loan";
-            toast.error(errorMsg);
+            toast.error(errorMsg, { id: 'upload' });
         } finally {
             setIsSubmitting(false);
         }

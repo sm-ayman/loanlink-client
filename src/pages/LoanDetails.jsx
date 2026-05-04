@@ -41,6 +41,12 @@ const LoanDetails = () => {
         fetchLoan();
     }, [id]);
 
+    const getImageUrl = (img) => {
+        if (!img) return "https://via.placeholder.com/600x400?text=Loan+Image";
+        if (img.startsWith('http')) return img;
+        return `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${img}`;
+    };
+
     const isAdminOrManager = backendUser?.role === 'admin' || backendUser?.role === 'manager';
     const canApply = user && !isAdminOrManager;
 
@@ -121,7 +127,7 @@ const LoanDetails = () => {
                 <div className="md:flex">
                     <div className="md:w-1/2 h-64 md:h-auto">
                         <img 
-                            src={loan.images?.[0] || loan.image || "https://via.placeholder.com/600x400?text=Loan+Image"} 
+                            src={getImageUrl(loan.images?.[0] || loan.image)} 
                             alt={loan.title} 
                             className="w-full h-full object-cover"
                         />

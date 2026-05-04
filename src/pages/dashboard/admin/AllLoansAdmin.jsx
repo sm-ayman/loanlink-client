@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { useForm } from "react-hook-form";
 import { Helmet } from "react-helmet-async";
+import { uploadImage } from "../../../utils/imageUpload";
 
 const AllLoansAdmin = () => {
     const [loans, setLoans] = useState([]);
@@ -72,11 +73,34 @@ const AllLoansAdmin = () => {
 
     const handleSaveLoan = async (data) => {
         try {
+            const formData = new FormData();
+            formData.append('title', data.title);
+            formData.append('category', data.category.toLowerCase());
+            formData.append('interestRate', parseFloat(data.interestRate));
+            formData.append('maxLoanLimit', parseFloat(data.maxLoanLimit));
+            formData.append('description', data.description);
+            formData.append('showOnHome', data.showOnHome === 'true' || data.showOnHome === true);
+
+            // Handle images
+            let imageUrls = [];
+            if (data.image && data.image[0]) {
+                toast.loading('Uploading image...', { id: 'upload' });
+                const photoURL = await uploadImage(data.image[0]);
+                imageUrls = [photoURL];
+                toast.success('Image uploaded', { id: 'upload' });
+            } else if (editingLoan) {
+                imageUrls = editingLoan.images || [];
+            }
+            
+            imageUrls.forEach(url => {
+                formData.append('images', url);
+            });
+
             let response;
             if (editingLoan) {
-                response = await loanAPI.updateLoan(editingLoan._id, data);
+                response = await loanAPI.updateLoan(editingLoan._id, formData);
             } else {
-                response = await loanAPI.createLoan(data);
+                response = await loanAPI.createLoan(formData);
             }
 
             if (response.success) {
@@ -85,7 +109,7 @@ const AllLoansAdmin = () => {
                 loadLoans();
             }
         } catch (err) {
-            toast.error(err.response?.data?.message || 'Failed to save loan');
+            toast.error(err.response?.data?.message || 'Failed to save loan', { id: 'upload' });
         }
     };
 
@@ -296,6 +320,16 @@ const LoanModal = ({ loan, isOpen, onClose, onSave }) => {
                         <label className="label font-semibold">Description</label>
                         <textarea className="textarea textarea-bordered h-24 focus:textarea-primary" {...register("description", { required: "Description is required" })}></textarea>
                         {errors.description && <span className="text-error text-xs mt-1">{errors.description.message}</span>}
+                    </div>
+
+                    <div className="form-control">
+                        <label className="label font-semibold">Loan Image (Optional)</label>
+                        <input 
+                            type="file" 
+                            className="file-input file-input-bordered w-full focus:file-input-primary" 
+                            accept="image/*"
+                            {...register("image")} 
+                        />
                     </div>
 
                     <div className="form-control">

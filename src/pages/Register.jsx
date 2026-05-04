@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import toast from "react-hot-toast";
 import { authAPI } from "../utils/api";
 import { Helmet } from "react-helmet-async";
+import { uploadImage } from "../utils/imageUpload";
 
 const Register = () => {
     const { signUp } = useContext(AuthContext);
@@ -13,12 +14,21 @@ const Register = () => {
     
     const onSubmit = async (data) => {
         try {
-            await signUp(data.name, data.email, data.password, data.role, data.photoURL);
+            let photoURL = data.photoURL;
+            
+            // Upload image to ImgBB if a file is selected
+            if (data.image && data.image[0]) {
+                toast.loading('Uploading image...', { id: 'upload' });
+                photoURL = await uploadImage(data.image[0]);
+                toast.success('Image uploaded', { id: 'upload' });
+            }
+
+            await signUp(data.name, data.email, data.password, data.role, photoURL);
             toast.success('Registration Successful');
             navigate('/dashboard');
         } catch (error) {
             console.error('Registration error:', error);
-            toast.error(error.message || 'Registration failed');
+            toast.error(error.message || 'Registration failed', { id: 'upload' });
         }
     };
 
@@ -58,7 +68,18 @@ const Register = () => {
                         </div>
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text">Photo URL</span>
+                                <span className="label-text">Profile Picture</span>
+                            </label>
+                            <input 
+                                type="file" 
+                                className="file-input file-input-bordered w-full" 
+                                accept="image/*"
+                                {...register("image")}
+                            />
+                        </div>
+                        <div className="form-control">
+                            <label className="label">
+                                <span className="label-text">Or Photo URL</span>
                             </label>
                             <input 
                                 type="text" 
