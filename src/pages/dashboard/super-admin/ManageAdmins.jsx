@@ -11,7 +11,7 @@ const ManageAdmins = () => {
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                <h1 className="text-3xl font-bold text-base-content flex items-center gap-2">
                     <FaUserShield className="text-secondary" /> Manage Admins
                 </h1>
                 <button className="btn btn-primary">Add New Admin</button>

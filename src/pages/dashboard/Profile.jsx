@@ -44,7 +44,7 @@ const Profile = () => {
             
             <div className="max-w-6xl mx-auto space-y-8">
                 <header>
-                    <h1 className="text-4xl font-bold text-gray-800">Account Overview</h1>
+                    <h1 className="text-4xl font-bold text-base-content">Account Overview</h1>
                     <p className="text-gray-500 mt-2">Manage your profile and view system statistics</p>
                 </header>
 
@@ -80,7 +80,7 @@ const Profile = () => {
                                 <div className="flex items-center gap-3">
                                     <FaClock className="text-primary opacity-50" />
                                     <div>
-                                        <p className="text-xs font-bold text-gray-400 uppercase">Last Login</p>
+                                        <p className="text-xs font-bold text-base-content/60 uppercase">Last Login</p>
                                         <p className="text-sm opacity-70">{new Date(user?.metadata?.lastSignInTime).toLocaleString()}</p>
                                     </div>
                                 </div>
@@ -129,7 +129,7 @@ const Profile = () => {
                                     <div className="grid grid-cols-3 gap-4 mt-6">
                                         {stats.map((stat, i) => (
                                             <div key={i} className="bg-base-200 p-4 rounded-2xl text-center shadow-sm">
-                                                <p className="text-xs font-bold text-gray-500 uppercase mb-1">{stat.name}</p>
+                                                <p className="text-xs font-bold text-base-content/50 uppercase mb-1">{stat.name}</p>
                                                 <p className="text-2xl font-bold" style={{color: stat.color}}>{stat.count}</p>
                                             </div>
                                         ))}

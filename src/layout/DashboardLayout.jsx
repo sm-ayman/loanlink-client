@@ -1,10 +1,16 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { FaHome, FaUsers, FaMoneyBillWave, FaHistory, FaFileInvoiceDollar, FaUserCog, FaSignOutAlt, FaBars, FaCheckCircle } from "react-icons/fa";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import useRole from "../hooks/useRole"; // We'll create this hook next
 
 const DashboardLayout = () => {
+    // Theme persistence in dashboard
+    useEffect(() => {
+        const theme = localStorage.getItem("theme") || "winter";
+        document.querySelector("html").setAttribute("data-theme", theme);
+    }, []);
+
     const { user, logOut } = useContext(AuthContext);
     const [role, isRoleLoading] = useRole();
     console.log("DashboardLayout - Role:", role, "Loading:", isRoleLoading);
