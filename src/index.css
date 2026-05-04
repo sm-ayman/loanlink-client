@@ -10,3 +10,7 @@
   mix-blend-mode: normal;
   filter: brightness(1.2);
 }
+
+body {
+  @apply bg-base-100 text-base-content transition-colors duration-300;
+}

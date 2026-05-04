@@ -5,8 +5,13 @@ const useRole = () => {
     const { getEffectiveUser, loading } = useContext(AuthContext);
     
     const effectiveUser = getEffectiveUser();
-    const role = effectiveUser?.role || 'borrower';
+    
+    // If still loading and no user yet, role is undefined/null
+    if (loading && !effectiveUser) {
+        return [null, true];
+    }
 
+    const role = effectiveUser?.role || 'borrower';
     const isRoleLoading = loading;
 
     return [role, isRoleLoading];

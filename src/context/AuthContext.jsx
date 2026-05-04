@@ -125,41 +125,13 @@ const AuthProvider = ({ children }) => {
   const signIn = async (email, password) => {
     setLoading(true);
     
-    // FIXED ADMIN ACCOUNT CHECK
-    const FIXED_ADMIN = {
-      email: 'admin@loanlink.com',
-      password: 'admin123',
-      data: {
-        id: 'admin-fixed-id',
-        name: 'System Administrator',
-        email: 'admin@loanlink.com',
-        role: 'admin'
-      }
-    };
+    const isFixedAdmin = email === 'admin@loanlink.com' || email === 'superadmin@loanlink.com';
 
     try {
-      // 1. Check for Fixed Admin
-      if (email === FIXED_ADMIN.email && password === FIXED_ADMIN.password) {
-        const response = await authAPI.login({ email, password });
-        if (response.success) {
-          const backendData = response.data.user;
-          const fakeFirebaseUser = {
-            uid: backendData.id,
-            email: backendData.email,
-            displayName: backendData.name,
-            emailVerified: true
-          };
-          setUser(fakeFirebaseUser);
-          setBackendUser(backendData);
-          localStorage.setItem('fakeUser', JSON.stringify(fakeFirebaseUser));
-          localStorage.setItem('backendUser', JSON.stringify(backendData));
-          setLoading(false);
-          return { user: fakeFirebaseUser };
-        }
-      }
-
-      // 2. Regular Backend Login (for Managers and Borrowers)
+      // 1. Regular Backend Login (for All Users)
+      console.log('Attempting backend login for:', email);
       const response = await authAPI.login({ email, password });
+      
       if (response.success) {
         const backendData = response.data.user;
         const fakeFirebaseUser = {
@@ -176,15 +148,23 @@ const AuthProvider = ({ children }) => {
         return { user: fakeFirebaseUser };
       }
     } catch (backendError) {
-      console.warn('Backend login failed, trying Firebase fallback:', backendError.response?.data?.message || backendError.message);
+      const errorMessage = backendError.response?.data?.message || backendError.message;
+      console.warn('Backend login failed:', errorMessage);
       
-      // 3. Fallback to Firebase Auth (for users who only have Firebase accounts)
-      try {
-        const result = await signInWithEmailAndPassword(auth, email, password);
-        return result;
-      } catch (firebaseError) {
+      // 2. Fallback to Firebase Auth ONLY if not a fixed admin account
+      if (!isFixedAdmin) {
+        try {
+          console.log('Trying Firebase fallback for non-admin user...');
+          const result = await signInWithEmailAndPassword(auth, email, password);
+          return result;
+        } catch (firebaseError) {
+          setLoading(false);
+          throw firebaseError;
+        }
+      } else {
+        // For admins, if backend fails, don't try Firebase (it will always fail there)
         setLoading(false);
-        throw firebaseError;
+        throw new Error(`Server Login Failed: ${errorMessage}`);
       }
     }
   };
@@ -245,7 +225,16 @@ const AuthProvider = ({ children }) => {
 
         // Sync with backend to get fresh data
         try {
-          const backendUserData = await loginWithBackend(currentUser);
+          let backendUserData = await loginWithBackend(currentUser);
+          
+          // If user doesn't exist in backend yet, try to sync/register them
+          if (!backendUserData) {
+            console.log('User not found in backend, attempting to sync...');
+            // Check if this is a known test manager account
+            const isTestManager = currentUser.email === 'manager@gamil.com' || currentUser.email === 'manager@gmail.com';
+            backendUserData = await syncWithBackend(currentUser, isTestManager ? 'manager' : 'borrower');
+          }
+
           if (backendUserData) {
             console.log('Backend user synced:', backendUserData);
             setBackendUser(backendUserData);
@@ -267,7 +256,8 @@ const AuthProvider = ({ children }) => {
               'admin@loanlink.com': { id: 'admin-123', name: 'System Admin', role: 'admin' },
               'manager1@loanlink.com': { id: 'manager-123', name: 'Loan Manager 1', role: 'manager' },
               'manager2@loanlink.com': { id: 'manager-456', name: 'Loan Manager 2', role: 'manager' },
-              'manager@gmail.com': { id: 'manager-gamil', name: 'Loan Manager', role: 'manager' },
+              'manager@gmail.com': { id: 'manager-gmail', name: 'Loan Manager', role: 'manager' },
+              'manager@gamil.com': { id: 'manager-gamil', name: 'Loan Manager (Gamil)', role: 'manager' },
               'borrower1@loanlink.com': { id: 'borrower-123', name: 'John Borrower', role: 'borrower' },
               'borrower2@loanlink.com': { id: 'borrower-456', name: 'Jane Borrower', role: 'borrower' }
           };
@@ -315,12 +305,17 @@ const AuthProvider = ({ children }) => {
     logOut,
     updateUserProfile,
     // Utility to get the effective user (backend user takes precedence)
-    getEffectiveUser: () => backendUser || {
-      id: user?.uid,
-      name: user?.displayName || user?.email?.split('@')[0],
-      email: user?.email,
-      role: 'borrower', // Default role for Firebase-only users
-      photoURL: user?.photoURL
+    getEffectiveUser: () => {
+      if (backendUser) return backendUser;
+      if (loading) return null; // Don't return a fake borrower role while loading
+      
+      return {
+        id: user?.uid,
+        name: user?.displayName || user?.email?.split('@')[0],
+        email: user?.email,
+        role: 'borrower', // Default role for Firebase-only users
+        photoURL: user?.photoURL
+      };
     },
     // Check if user is authenticated (has backend session)
     isAuthenticated: () => !!backendUser,
