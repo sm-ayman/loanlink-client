@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: winter, night;
+}
 
 .logo-blend {
   mix-blend-mode: multiply;
@@ -11,6 +13,10 @@
   filter: brightness(1.2);
 }
 
+:root {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
 body {
-  @apply bg-base-100 text-base-content transition-colors duration-300;
+  min-height: 100vh;
 }
