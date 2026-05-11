@@ -2,6 +2,10 @@
 
 A modern, responsive React frontend for the LoanLink microloan management system built with Vite, React Router, and Tailwind CSS.
 
+## 🔗 Live Site
+[Live Demo](https://loanlink-client.netlify.app/)
+
+
 ## 🚀 Features
 
 - **Modern UI**: Built with React 19, Tailwind CSS, and DaisyUI components
@@ -102,6 +106,14 @@ The app supports multiple authentication methods:
 - Google OAuth login
 - GitHub OAuth login
 - Super admin bypass for testing
+
+## 🔐 Credentials for Testing
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Admin** | `admin@loanlink.com` | `admin123` |
+| **Manager** | `manager@loanlink.com` | `Manager#123` |
+
 
 ## 👥 User Roles
 
