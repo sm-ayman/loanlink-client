@@ -5,6 +5,14 @@ A modern, responsive React frontend for the LoanLink microloan management system
 ## 🔗 Live Site
 [Live Demo](https://loanlink-client.netlify.app/)
 
+## 🔐 Credentials for Testing
+
+| Role | Email | Password |
+|------|-------|----------|
+| **Admin** | `admin@loanlink.com` | `admin123` |
+| **Manager** | `manager@loanlink.com` | `Manager#123` |
+
+
 
 ## 🚀 Features
 
@@ -106,14 +114,6 @@ The app supports multiple authentication methods:
 - Google OAuth login
 - GitHub OAuth login
 - Super admin bypass for testing
-
-## 🔐 Credentials for Testing
-
-| Role | Email | Password |
-|------|-------|----------|
-| **Admin** | `admin@loanlink.com` | `admin123` |
-| **Manager** | `manager@loanlink.com` | `Manager#123` |
-
 
 ## 👥 User Roles
 
