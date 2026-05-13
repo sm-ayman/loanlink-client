@@ -1,8 +1,11 @@
 import axios from 'axios';
 
 // Create axios instance with base configuration
+const baseURL = import.meta.env.VITE_API_URL || 'https://loanlink-server-six.vercel.app/api';
+console.log('🚀 API Base URL:', baseURL);
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://loanlink-server-six.vercel.app/api',
+  baseURL,
   withCredentials: true, // Important for cookies
   headers: {
     'Content-Type': 'application/json',

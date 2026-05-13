@@ -37,7 +37,6 @@ const AllLoans = () => {
                 setError(err);
                 setIsError(true);
             } finally {
-                setIsLoading(true); // This should be false, I'll fix in the next chunk or here
                 setIsLoading(false);
             }
         };
