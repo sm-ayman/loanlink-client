@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
-import { FaSearch, FaEye, FaEdit, FaTrash, FaPlus, FaHome } from "react-icons/fa";
+import { FaSearch, FaEye, FaEdit, FaTrash, FaPlus, FaHome, FaTag, FaPercent, FaDollarSign, FaHeading, FaImage } from "react-icons/fa";
 import { loanAPI } from "../../../utils/api";
 import toast from "react-hot-toast";
 import Swal from "sweetalert2";
 import { useForm } from "react-hook-form";
 import { Helmet } from "react-helmet-async";
 import { uploadImage } from "../../../utils/imageUpload";
+import Modal from "../../../components/ui/Modal";
+import Input from "../../../components/ui/Input";
+import Button from "../../../components/ui/Button";
 
 const AllLoansAdmin = () => {
     const [loans, setLoans] = useState([]);
@@ -137,9 +140,9 @@ const AllLoansAdmin = () => {
                     </h1>
                     <p className="opacity-70 mt-1">Manage all available loan programs across the system.</p>
                 </div>
-                <button onClick={() => openModal()} className="btn btn-primary shadow-lg">
-                    <FaPlus /> Create New Loan
-                </button>
+                <Button onClick={() => openModal()} variant="primary" icon={FaPlus} className="shadow-lg">
+                    Create New Loan
+                </Button>
             </div>
             
             {/* Search and Stats */}
@@ -248,20 +251,18 @@ const AllLoansAdmin = () => {
             </div>
 
             {/* Modal */}
-            {isModalOpen && (
-                <LoanModal 
-                    loan={editingLoan} 
-                    isOpen={isModalOpen} 
-                    onClose={() => setIsModalOpen(false)} 
-                    onSave={handleSaveLoan}
-                />
-            )}
+            <LoanModal 
+                loan={editingLoan} 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                onSave={handleSaveLoan}
+            />
         </div>
     );
 };
 
 const LoanModal = ({ loan, isOpen, onClose, onSave }) => {
-    const { register, handleSubmit, formState: { errors } } = useForm({
+    const { register, handleSubmit, formState: { errors }, reset } = useForm({
         defaultValues: loan ? {
             ...loan,
             interestRate: loan.interestRate,
@@ -276,78 +277,145 @@ const LoanModal = ({ loan, isOpen, onClose, onSave }) => {
         }
     });
 
-    const onSubmit = (data) => {
-        onSave(data);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (isOpen) {
+            reset(loan ? {
+                ...loan,
+                interestRate: loan.interestRate,
+                maxLoanLimit: loan.maxLoanLimit
+            } : {
+                title: '',
+                category: 'personal',
+                description: '',
+                maxLoanLimit: 10000,
+                interestRate: 5,
+                showOnHome: false
+            });
+        }
+    }, [loan, isOpen, reset]);
+
+    const onSubmit = async (data) => {
+        setIsSubmitting(true);
+        try {
+            await onSave(data);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
-        <div className={`modal ${isOpen ? 'modal-open' : ''}`}>
-            <div className="modal-box w-11/12 max-w-2xl p-8 rounded-2xl shadow-2xl bg-base-100 text-base-content">
-                <button onClick={onClose} className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4">✕</button>
-                <h3 className="font-bold text-2xl mb-6 text-primary flex items-center gap-2">
-                    {loan ? <FaEdit /> : <FaPlus />} {loan ? 'Edit Loan Program' : 'Create New Loan'}
-                </h3>
-                
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="form-control">
-                            <label className="label font-semibold">Title</label>
-                            <input type="text" className="input input-bordered focus:input-primary" {...register("title", { required: "Title is required" })} />
-                            {errors.title && <span className="text-error text-xs mt-1">{errors.title.message}</span>}
-                        </div>
-                        <div className="form-control">
-                            <label className="label font-semibold">Category</label>
-                            <select className="select select-bordered focus:select-primary" {...register("category")}>
-                                <option value="personal">Personal</option>
-                                <option value="business">Business</option>
-                                <option value="home">Home</option>
-                                <option value="vehicle">Vehicle</option>
-                                <option value="education">Education</option>
-                                <option value="emergency">Emergency</option>
-                            </select>
-                        </div>
-                        <div className="form-control">
-                            <label className="label font-semibold">Max Amount ($)</label>
-                            <input type="number" className="input input-bordered focus:input-primary" {...register("maxLoanLimit", { required: true, min: 100 })} />
-                        </div>
-                        <div className="form-control">
-                            <label className="label font-semibold">Interest Rate (%)</label>
-                            <input type="number" step="0.1" className="input input-bordered focus:input-primary" {...register("interestRate", { required: true, min: 0 })} />
-                        </div>
-                    </div>
-
-                    <div className="form-control">
-                        <label className="label font-semibold">Description</label>
-                        <textarea className="textarea textarea-bordered h-24 focus:textarea-primary" {...register("description", { required: "Description is required" })}></textarea>
-                        {errors.description && <span className="text-error text-xs mt-1">{errors.description.message}</span>}
-                    </div>
-
-                    <div className="form-control">
-                        <label className="label font-semibold">Loan Image (Optional)</label>
-                        <input 
-                            type="file" 
-                            className="file-input file-input-bordered w-full focus:file-input-primary" 
-                            accept="image/*"
-                            {...register("image")} 
-                        />
-                    </div>
-
-                    <div className="form-control">
-                        <label className="label cursor-pointer justify-start gap-3">
-                            <input type="checkbox" className="checkbox checkbox-primary" {...register("showOnHome")} />
-                            <span className="label-text font-bold">Show this loan program on Home Page</span>
+        <Modal 
+            isOpen={isOpen} 
+            onClose={() => !isSubmitting && onClose()}
+            title={loan ? 'Edit Loan Program' : 'Create New Loan'}
+            size="lg"
+        >
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Input 
+                        label="Title"
+                        type="text" 
+                        icon={FaHeading}
+                        error={errors.title?.message}
+                        disabled={isSubmitting}
+                        {...register("title", { required: "Title is required" })}
+                    />
+                    <div className="flex flex-col w-full gap-1.5">
+                        <label className="text-xs font-semibold tracking-wider text-brand-text/80 uppercase">
+                            Category <span className="text-red-500">*</span>
                         </label>
+                        <select 
+                            className="select select-bordered w-full h-12 bg-brand-neutral/30 text-brand-text border-brand-border rounded-brand focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/40" 
+                            disabled={isSubmitting}
+                            {...register("category")}
+                        >
+                            <option value="personal">Personal</option>
+                            <option value="business">Business</option>
+                            <option value="home">Home</option>
+                            <option value="vehicle">Vehicle</option>
+                            <option value="education">Education</option>
+                            <option value="emergency">Emergency</option>
+                        </select>
                     </div>
+                    <Input 
+                        label="Max Amount ($)"
+                        type="number" 
+                        icon={FaDollarSign}
+                        error={errors.maxLoanLimit?.message}
+                        disabled={isSubmitting}
+                        {...register("maxLoanLimit", { required: "Max limit is required", min: { value: 100, message: "Minimum is 100" } })}
+                    />
+                    <Input 
+                        label="Interest Rate (%)"
+                        type="number" 
+                        step="0.1" 
+                        icon={FaPercent}
+                        error={errors.interestRate?.message}
+                        disabled={isSubmitting}
+                        {...register("interestRate", { required: "Interest rate is required", min: { value: 0, message: "Cannot be negative" } })}
+                    />
+                </div>
 
-                    <div className="modal-action">
-                        <button type="button" className="btn btn-ghost px-8" onClick={onClose}>Cancel</button>
-                        <button type="submit" className="btn btn-primary px-8 shadow-lg shadow-primary/30">
-                            {loan ? 'Update Loan' : 'Create Loan'}
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                <div className="flex flex-col w-full gap-1.5">
+                    <label className="text-xs font-semibold tracking-wider text-brand-text/80 uppercase">
+                        Description <span className="text-red-500">*</span>
+                    </label>
+                    <textarea 
+                        className={`
+                            w-full px-4 py-3 text-sm bg-brand-neutral/30 text-brand-text border border-brand-border rounded-brand
+                            transition-all duration-200 outline-none h-24 resize-none
+                            focus:ring-2 focus:ring-brand-secondary/40 focus:border-brand-secondary focus:bg-brand-card
+                            disabled:opacity-50 disabled:bg-brand-neutral/10 disabled:pointer-events-none
+                            ${errors.description ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}
+                        `} 
+                        disabled={isSubmitting}
+                        {...register("description", { required: "Description is required" })}
+                    ></textarea>
+                    {errors.description && <span className="text-xs text-red-500 font-medium">{errors.description.message}</span>}
+                </div>
+
+                <div className="flex flex-col w-full gap-1.5">
+                    <label className="text-xs font-semibold tracking-wider text-brand-text/80 uppercase">
+                        Loan Image (Optional)
+                    </label>
+                    <input 
+                        type="file" 
+                        className="file-input file-input-bordered w-full h-12 text-sm bg-brand-neutral/30 text-brand-text border-brand-border rounded-brand focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/40" 
+                        accept="image/*"
+                        disabled={isSubmitting}
+                        {...register("image")} 
+                    />
+                </div>
+
+                <div className="form-control">
+                    <label className="label cursor-pointer justify-start gap-3">
+                        <input type="checkbox" className="checkbox checkbox-primary" disabled={isSubmitting} {...register("showOnHome")} />
+                        <span className="label-text font-bold">Show this loan program on Home Page</span>
+                    </label>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-brand-border mt-6">
+                    <Button 
+                        type="button" 
+                        variant="outline" 
+                        onClick={onClose}
+                        disabled={isSubmitting}
+                    >
+                        Cancel
+                    </Button>
+                    <Button 
+                        type="submit" 
+                        variant="primary" 
+                        isLoading={isSubmitting}
+                        className="shadow-lg shadow-brand-primary/30"
+                    >
+                        {loan ? 'Update Loan' : 'Create Loan'}
+                    </Button>
+                </div>
+            </form>
+        </Modal>
     );
 };
 

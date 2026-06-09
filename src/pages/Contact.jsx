@@ -1,12 +1,23 @@
 import { Helmet } from "react-helmet-async";
-import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaPaperPlane } from "react-icons/fa";
+import { FaPhone, FaEnvelope, FaMapMarkerAlt, FaPaperPlane, FaUser, FaTag } from "react-icons/fa";
 import toast from "react-hot-toast";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import Input from "../components/ui/Input";
+import Button from "../components/ui/Button";
 
 const Contact = () => {
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        toast.success("Message sent! We will get back to you soon.");
-        e.target.reset();
+    const { register, handleSubmit, formState: { errors }, reset } = useForm();
+    const [isLoading, setIsLoading] = useState(false);
+
+    const onSubmit = (data) => {
+        setIsLoading(true);
+        // Simulate API call
+        setTimeout(() => {
+            toast.success("Message sent! We will get back to you soon.");
+            reset();
+            setIsLoading(false);
+        }, 1000);
     };
 
     return (
@@ -78,30 +89,76 @@ const Contact = () => {
                     </div>
 
                     {/* Contact Form */}
-                    <div className="card bg-base-100 p-10 shadow-2xl border border-base-200">
+                    <div className="card bg-base-100 p-10 shadow-2xl border border-brand-border">
                         <h2 className="text-3xl font-bold mb-8">Send a Message</h2>
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="form-control">
-                                    <label className="label font-bold uppercase text-xs opacity-50">Your Name</label>
-                                    <input type="text" placeholder="John Doe" className="input input-bordered focus:input-primary bg-base-200 border-none" required />
-                                </div>
-                                <div className="form-control">
-                                    <label className="label font-bold uppercase text-xs opacity-50">Your Email</label>
-                                    <input type="email" placeholder="john@example.com" className="input input-bordered focus:input-primary bg-base-200 border-none" required />
-                                </div>
+                                <Input 
+                                    label="Your Name"
+                                    type="text" 
+                                    placeholder="John Doe" 
+                                    icon={FaUser}
+                                    error={errors.name?.message}
+                                    disabled={isLoading}
+                                    {...register("name", { required: "Name is required" })}
+                                />
+                                <Input 
+                                    label="Your Email"
+                                    type="email" 
+                                    placeholder="john@example.com" 
+                                    icon={FaEnvelope}
+                                    error={errors.email?.message}
+                                    disabled={isLoading}
+                                    {...register("email", { 
+                                        required: "Email is required",
+                                        pattern: {
+                                            value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                                            message: "Invalid email address"
+                                        }
+                                    })}
+                                />
                             </div>
-                            <div className="form-control">
-                                <label className="label font-bold uppercase text-xs opacity-50">Subject</label>
-                                <input type="text" placeholder="How can we help?" className="input input-bordered focus:input-primary bg-base-200 border-none" required />
+                            <Input 
+                                label="Subject"
+                                type="text" 
+                                placeholder="How can we help?" 
+                                icon={FaTag}
+                                error={errors.subject?.message}
+                                disabled={isLoading}
+                                {...register("subject", { required: "Subject is required" })}
+                            />
+                            
+                            <div className="flex flex-col w-full gap-1.5">
+                                <label className="text-xs font-semibold tracking-wider text-brand-text/80 uppercase">
+                                    Message <span className="text-red-500">*</span>
+                                </label>
+                                <textarea 
+                                    className={`
+                                        w-full px-4 py-3 text-sm bg-brand-neutral/30 text-brand-text border border-brand-border rounded-brand
+                                        transition-all duration-200 outline-none h-40 resize-none
+                                        focus:ring-2 focus:ring-brand-secondary/40 focus:border-brand-secondary focus:bg-brand-card
+                                        disabled:opacity-50 disabled:bg-brand-neutral/10 disabled:pointer-events-none
+                                        ${errors.message ? 'border-red-500 focus:border-red-500 focus:ring-red-500/20' : ''}
+                                    `} 
+                                    placeholder="Type your message here..."
+                                    disabled={isLoading}
+                                    {...register("message", { 
+                                        required: "Message is required",
+                                        minLength: { value: 10, message: "Message must be at least 10 characters long" }
+                                    })}
+                                ></textarea>
+                                {errors.message && <span className="text-xs text-red-500 font-medium">{errors.message.message}</span>}
                             </div>
-                            <div className="form-control">
-                                <label className="label font-bold uppercase text-xs opacity-50">Message</label>
-                                <textarea className="textarea textarea-bordered h-40 focus:textarea-primary bg-base-200 border-none" placeholder="Type your message here..." required></textarea>
-                            </div>
-                            <button type="submit" className="btn btn-primary w-full btn-lg gap-3 shadow-lg shadow-primary/30">
-                                <FaPaperPlane /> Send Message
-                            </button>
+                            
+                            <Button 
+                                type="submit" 
+                                variant="primary" 
+                                className="w-full h-14 text-lg mt-4 shadow-lg shadow-brand-primary/30"
+                                icon={FaPaperPlane}
+                                isLoading={isLoading}
+                            >
+                                Send Message
+                            </Button>
                         </form>
                     </div>
                 </div>

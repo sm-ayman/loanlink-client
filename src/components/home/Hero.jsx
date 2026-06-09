@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import Button from '../ui/Button';
 
 const Hero = () => {
     return (
@@ -31,13 +32,15 @@ const Hero = () => {
                     className="flex-1 text-center lg:text-left"
                 >
                     <h1 className="text-5xl font-bold leading-tight">
-                        Empowering Your <span className="text-primary">Financial Dreams</span>
+                        Empowering Your <span className="text-brand-primary">Financial Dreams</span>
                     </h1>
                     <p className="py-6 text-lg opacity-70">
                         Get quick, transparent, and hassle-free loans. Whether it's for education, business, or personal needs, LoanLink bridges the gap between you and your goals.
                     </p>
-                    <Link to="/all-loans" className="btn btn-primary btn-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
-                        Apply for Loan
+                    <Link to="/all-loans">
+                        <Button variant="primary" size="lg" className="shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+                            Apply for Loan
+                        </Button>
                     </Link>
                 </motion.div>
             </div>

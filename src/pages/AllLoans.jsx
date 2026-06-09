@@ -5,6 +5,11 @@ import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { loanAPI } from '../utils/api';
 import { Helmet } from 'react-helmet-async';
+import Card from '../components/ui/Card';
+import Badge from '../components/ui/Badge';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import { FaSearch } from 'react-icons/fa';
 
 const AllLoans = () => {
     const axiosPublic = useAxiosPublic();
@@ -71,7 +76,7 @@ const AllLoans = () => {
     };
 
     return (
-        <div className="min-h-screen bg-base-200 py-10 px-4">
+        <div className="min-h-screen bg-brand-bg py-10 px-4">
             <Helmet>
                 <title>All Loans | LoanLink</title>
             </Helmet>
@@ -79,18 +84,16 @@ const AllLoans = () => {
                 <SectionTitle heading="All Loan Programs" subHeading="Find the perfect loan for your needs" />
                 
                 {/* Search and Filter */}
-                <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-10 bg-base-100 p-4 rounded-xl shadow-sm">
+                <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-10 bg-brand-card p-4 rounded-brand border border-brand-border shadow-sm">
                     <div className="w-full md:w-1/3">
-                        <label className="input input-bordered flex items-center gap-2">
-                            <input 
-                                type="text" 
-                                className="grow" 
-                                placeholder="Search loans..." 
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                            />
-                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-4 h-4 opacity-70"><path fillRule="evenodd" d="M9.965 11.026a5 5 0 1 1 1.06-1.06l2.755 2.754a.75.75 0 1 1-1.06 1.06l-2.755-2.754ZM10.5 7a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0Z" clipRule="evenodd" /></svg>
-                        </label>
+                        <Input 
+                            type="text" 
+                            placeholder="Search loans..." 
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            icon={FaSearch}
+                            iconPosition="left"
+                        />
                     </div>
                     
                     <div className="w-full md:w-1/4">
@@ -115,41 +118,45 @@ const AllLoans = () => {
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {loans.map(loan => (
-                            <div key={loan._id} className="card bg-base-100 shadow-xl hover:shadow-2xl transition-all duration-300 border border-base-200">
+                            <Card key={loan._id} hoverable className="p-0 overflow-hidden flex flex-col h-full">
                                 <figure className="h-56 overflow-hidden relative group">
                                     <img 
                                         src={getImageUrl(loan)} 
                                         alt={loan.title} 
                                         className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" 
                                     />
-                                    <div className="absolute top-4 right-4 badge badge-secondary badge-lg shadow-md uppercase">
-                                        {loan.category}
+                                    <div className="absolute top-4 right-4 z-10">
+                                        <Badge variant="secondary">{loan.category}</Badge>
                                     </div>
                                 </figure>
-                                <div className="card-body">
-                                    <h2 className="card-title text-2xl font-bold mb-2">
-                                        {loan.title}
-                                    </h2>
-                                    <p className="opacity-70 line-clamp-2 mb-4">{loan.description}</p>
-                                    
-                                    <div className="space-y-2 mb-6">
-                                        <div className="flex justify-between items-center bg-base-200 p-2 rounded-lg">
-                                            <span className="font-semibold text-sm">Interest Rate:</span>
-                                            <span className="badge badge-outline font-bold">{loan.interestRate}%</span>
-                                        </div>
-                                        <div className="flex justify-between items-center bg-base-200 p-2 rounded-lg">
-                                            <span className="font-semibold text-sm">Max Amount:</span>
-                                            <span className="text-primary font-bold text-lg">${loan.maxLoanLimit?.toLocaleString()}</span>
+                                <div className="p-6 flex flex-col flex-grow justify-between gap-4">
+                                    <div>
+                                        <h2 className="text-2xl font-bold text-brand-text mb-2 line-clamp-1">
+                                            {loan.title}
+                                        </h2>
+                                        <p className="text-brand-text-muted text-sm line-clamp-2 mb-4">{loan.description}</p>
+                                        
+                                        <div className="space-y-2 mb-2">
+                                            <div className="flex justify-between items-center bg-brand-neutral/50 p-2 rounded-brand border border-brand-border/40">
+                                                <span className="font-semibold text-sm">Interest Rate:</span>
+                                                <Badge variant="neutral">{loan.interestRate}%</Badge>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-brand-neutral/50 p-2 rounded-brand border border-brand-border/40">
+                                                <span className="font-semibold text-sm">Max Amount:</span>
+                                                <span className="text-brand-primary font-bold text-lg">${loan.maxLoanLimit?.toLocaleString()}</span>
+                                            </div>
                                         </div>
                                     </div>
 
-                                    <div className="card-actions justify-end mt-auto">
-                                        <Link to={`/loans/${loan._id}`} className="btn btn-primary w-full text-white font-bold shadow-lg hover:shadow-primary/50 transition-all">
-                                            View Details & Apply
+                                    <div className="mt-auto">
+                                        <Link to={`/loans/${loan._id}`}>
+                                            <Button variant="primary" className="w-full font-bold shadow-md shadow-brand-primary/20">
+                                                View Details & Apply
+                                            </Button>
                                         </Link>
                                     </div>
                                 </div>
-                            </div>
+                            </Card>
                         ))}
                     </div>
                 )}

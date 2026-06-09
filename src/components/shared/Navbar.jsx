@@ -1,10 +1,13 @@
 import { useContext, useState, useEffect } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import { FaUserCircle } from "react-icons/fa";
+import Button from "../ui/Button";
+import Dropdown from "../ui/Dropdown";
 
 const Navbar = () => {
   const { user, logOut } = useContext(AuthContext);
+  const navigate = useNavigate();
 
   const handleLogOut = () => {
     logOut()
@@ -53,6 +56,12 @@ const Navbar = () => {
       )}
     </>
   );
+
+  const dropdownItems = [
+    { label: user?.displayName || 'User' },
+    { label: 'Dashboard', onClick: () => navigate("/dashboard") },
+    { label: 'Logout', onClick: handleLogOut, danger: true }
+  ];
 
   return (
     <div className="navbar bg-base-100/95 backdrop-blur-sm shadow-sm fixed z-50 max-w-screen-2xl mx-auto transition-all duration-300">
@@ -108,40 +117,32 @@ const Navbar = () => {
         </label>
 
         {user ? (
-          <div className="dropdown dropdown-end">
-            <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-              <div className="w-10 rounded-full">
-                {user.photoURL ? (
-                    <img src={user.photoURL} alt="User" />
-                ) : (
-                    <FaUserCircle className="w-full h-full" />
-                )}
+          <Dropdown
+            align="right"
+            trigger={
+              <div className="btn btn-ghost btn-circle avatar select-none cursor-pointer">
+                <div className="w-10 rounded-full">
+                  {user.photoURL ? (
+                      <img src={user.photoURL} alt="User" />
+                  ) : (
+                      <FaUserCircle className="w-full h-full text-brand-text" />
+                  )}
+                </div>
               </div>
-            </label>
-            <ul
-              tabIndex={0}
-              className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52"
-            >
-              <li>
-                <span className="justify-between">
-                  {user.displayName || 'User'}
-                </span>
-              </li>
-              <li>
-                <Link to="/dashboard">Dashboard</Link>
-              </li>
-              <li>
-                <button onClick={handleLogOut}>Logout</button>
-              </li>
-            </ul>
-          </div>
+            }
+            items={dropdownItems}
+          />
         ) : (
           <div className="flex gap-2">
-            <Link to="/login" className="btn btn-ghost btn-sm">
-              Login
+            <Link to="/login">
+              <Button variant="ghost" size="sm">
+                Login
+              </Button>
             </Link>
-            <Link to="/register" className="btn btn-primary btn-sm">
-              Register
+            <Link to="/register">
+              <Button variant="primary" size="sm">
+                Register
+              </Button>
             </Link>
           </div>
         )}

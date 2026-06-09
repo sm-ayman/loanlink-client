@@ -4,6 +4,46 @@
   themes: winter, night;
 }
 
+@theme {
+  --color-brand-primary: var(--brand-primary);
+  --color-brand-secondary: var(--brand-secondary);
+  --color-brand-accent: var(--brand-accent);
+  --color-brand-neutral: var(--brand-neutral);
+  --color-brand-bg: var(--brand-bg);
+  --color-brand-card: var(--brand-card);
+  --color-brand-text: var(--brand-text);
+  --color-brand-text-muted: var(--brand-text-muted);
+  --color-brand-border: var(--brand-border);
+  
+  --radius-brand: var(--brand-radius);
+}
+
+:root, [data-theme="winter"] {
+  --brand-primary: #059669; /* Emerald 600 - representing money, growth, microloans */
+  --brand-secondary: #4f46e5; /* Indigo 600 - representing trust, security */
+  --brand-accent: #d97706; /* Amber 600 - representing warning, pending, attention */
+  --brand-neutral: #f1f5f9; /* Slate 100 */
+  --brand-bg: #f8fafc; /* Slate 50 */
+  --brand-card: #ffffff;
+  --brand-text: #0f172a; /* Slate 900 */
+  --brand-text-muted: #475569; /* Slate 600 */
+  --brand-border: #e2e8f0; /* Slate 200 */
+  --brand-radius: 0.75rem; /* unified rounded-xl */
+}
+
+[data-theme="night"] {
+  --brand-primary: #10b981; /* Emerald 500 */
+  --brand-secondary: #6366f1; /* Indigo 500 */
+  --brand-accent: #f59e0b; /* Amber 500 */
+  --brand-neutral: #1e293b; /* Slate 800 */
+  --brand-bg: #0f172a; /* Slate 900 */
+  --brand-card: #1e293b; /* Slate 800 */
+  --brand-text: #f8fafc; /* Slate 50 */
+  --brand-text-muted: #94a3b8; /* Slate 400 */
+  --brand-border: #334155; /* Slate 700 */
+  --brand-radius: 0.75rem; /* unified rounded-xl */
+}
+
 .logo-blend {
   mix-blend-mode: multiply;
 }
@@ -19,4 +59,98 @@
 
 body {
   min-height: 100vh;
+  background-color: var(--brand-bg);
+  color: var(--brand-text);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden; /* Prevent horizontal scrolling across the application */
+}
+
+/* Global DaisyUI overrides mapping to design system tokens */
+.btn {
+  border-radius: var(--brand-radius) !important;
+  font-family: inherit;
+  transition: all 0.2s ease-in-out;
+}
+.btn-primary {
+  background-color: var(--brand-primary) !important;
+  border-color: var(--brand-primary) !important;
+  color: #ffffff !important;
+}
+.btn-primary:hover {
+  background-color: var(--brand-primary) !important;
+  opacity: 0.9;
+}
+.btn-secondary {
+  background-color: var(--brand-secondary) !important;
+  border-color: var(--brand-secondary) !important;
+  color: #ffffff !important;
+}
+.btn-secondary:hover {
+  background-color: var(--brand-secondary) !important;
+  opacity: 0.9;
+}
+.btn-accent {
+  background-color: var(--brand-accent) !important;
+  border-color: var(--brand-accent) !important;
+  color: #ffffff !important;
+}
+.btn-accent:hover {
+  background-color: var(--brand-accent) !important;
+  opacity: 0.9;
+}
+
+.input, .select, .textarea {
+  border-radius: var(--brand-radius) !important;
+  border-color: var(--brand-border) !important;
+  background-color: var(--brand-neutral) !important;
+  color: var(--brand-text) !important;
+}
+.input:focus, .select:focus, .textarea:focus {
+  outline: 2px solid var(--brand-secondary) !important;
+  outline-offset: 1px !important;
+}
+
+.card {
+  border-radius: var(--brand-radius) !important;
+  background-color: var(--brand-card) !important;
+  border: 1px solid var(--brand-border) !important;
+  color: var(--brand-text) !important;
+}
+
+.badge {
+  border-radius: 9999px !important;
+  font-weight: 600 !important;
+}
+.badge-primary {
+  background-color: rgba(5, 150, 105, 0.15) !important;
+  color: var(--brand-primary) !important;
+  border-color: rgba(5, 150, 105, 0.2) !important;
+}
+.badge-secondary {
+  background-color: rgba(79, 70, 229, 0.15) !important;
+  color: var(--brand-secondary) !important;
+  border-color: rgba(79, 70, 229, 0.2) !important;
+}
+.badge-accent {
+  background-color: rgba(217, 119, 6, 0.15) !important;
+  color: var(--brand-accent) !important;
+  border-color: rgba(217, 119, 6, 0.2) !important;
+}
+
+.modal-box {
+  border-radius: var(--brand-radius) !important;
+  background-color: var(--brand-card) !important;
+  border: 1px solid var(--brand-border) !important;
+  color: var(--brand-text) !important;
+}
+
+.table th {
+  color: var(--brand-text) !important;
+  opacity: 0.8;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+}
+.table tr:hover {
+  background-color: color-mix(in srgb, var(--brand-neutral) 20%, transparent) !important;
 }

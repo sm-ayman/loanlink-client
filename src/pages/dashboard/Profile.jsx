@@ -3,14 +3,24 @@ import { AuthContext } from "../../context/AuthContext";
 import useRole from "../../hooks/useRole";
 import { applicationAPI } from "../../utils/api";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { FaChartBar, FaUserCircle, FaEnvelope, FaIdBadge, FaClock } from "react-icons/fa";
+import { FaChartBar, FaUserCircle, FaEnvelope, FaIdBadge, FaClock, FaUser, FaLink } from "react-icons/fa";
 import { Helmet } from "react-helmet-async";
+import toast from "react-hot-toast";
+import { useForm } from "react-hook-form";
+import Modal from "../../components/ui/Modal";
+import Input from "../../components/ui/Input";
+import Button from "../../components/ui/Button";
 
 const Profile = () => {
-    const { user } = useContext(AuthContext);
+    const { user, updateUserProfile } = useContext(AuthContext);
     const [role] = useRole();
     const [stats, setStats] = useState([]);
     const [loading, setLoading] = useState(false);
+    
+    // Edit Profile State
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const { register, handleSubmit, formState: { errors }, reset } = useForm();
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -35,6 +45,29 @@ const Profile = () => {
         };
         if (role) fetchStats();
     }, [role]);
+
+    const openEditModal = () => {
+        reset({
+            name: user?.displayName || '',
+            photoURL: user?.photoURL || ''
+        });
+        setIsEditModalOpen(true);
+    };
+
+    const handleUpdateProfile = async (data) => {
+        setIsUpdating(true);
+        try {
+            await updateUserProfile(data.name, data.photoURL);
+            toast.success("Profile updated successfully");
+            setIsEditModalOpen(false);
+            // Optionally reload to see changes immediately depending on how AuthContext is listening
+            window.location.reload();
+        } catch (error) {
+            toast.error(error.message || "Failed to update profile");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
 
     return (
         <div className="p-6 bg-base-200 min-h-screen">
@@ -87,7 +120,9 @@ const Profile = () => {
                             </div>
                             
                             <div className="card-actions mt-8 w-full">
-                                <button className="btn btn-outline btn-primary w-full">Edit Profile</button>
+                                <Button onClick={openEditModal} variant="outline" className="w-full">
+                                    Edit Profile
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -155,6 +190,52 @@ const Profile = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Edit Profile Modal */}
+            <Modal 
+                isOpen={isEditModalOpen} 
+                onClose={() => !isUpdating && setIsEditModalOpen(false)}
+                title="Update Profile"
+            >
+                <form onSubmit={handleSubmit(handleUpdateProfile)} className="space-y-4 pt-2">
+                    <Input 
+                        label="Full Name"
+                        type="text" 
+                        placeholder="John Doe" 
+                        icon={FaUser}
+                        error={errors.name?.message}
+                        disabled={isUpdating}
+                        {...register("name", { required: "Name is required" })}
+                    />
+                    
+                    <Input 
+                        label="Profile Photo URL"
+                        type="text" 
+                        placeholder="https://example.com/photo.jpg" 
+                        icon={FaLink}
+                        disabled={isUpdating}
+                        {...register("photoURL")}
+                    />
+                    
+                    <div className="flex justify-end gap-3 pt-4 border-t border-brand-border mt-6">
+                        <Button 
+                            type="button" 
+                            variant="outline" 
+                            onClick={() => setIsEditModalOpen(false)}
+                            disabled={isUpdating}
+                        >
+                            Cancel
+                        </Button>
+                        <Button 
+                            type="submit" 
+                            variant="primary" 
+                            isLoading={isUpdating}
+                        >
+                            Save Changes
+                        </Button>
+                    </div>
+                </form>
+            </Modal>
         </div>
     );
 };
