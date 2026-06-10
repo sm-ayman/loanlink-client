@@ -196,6 +196,10 @@ For development support:
 - Check browser console for debugging
 - Ensure API server is running for full functionality
 
+## 👨‍💻 Developer
+
+- **Portfolio**: [https://sm-ayman.netlify.app/](https://sm-ayman.netlify.app/)
+
 ## 📄 License
 
 This project is part of the LoanLink assignment submission.
