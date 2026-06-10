@@ -65,7 +65,8 @@ const Navbar = () => {
   );
 
   const dropdownItems = [
-    { label: user?.displayName || 'User' },
+    { label: user?.displayName || 'User', subLabel: user?.email, isHeader: true },
+    { divider: true },
     { label: 'Dashboard', onClick: () => navigate("/dashboard") },
     { label: 'Logout', onClick: handleLogOut, danger: true }
   ];

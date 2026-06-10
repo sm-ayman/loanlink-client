@@ -1,14 +1,17 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { FaHome, FaUsers, FaMoneyBillWave, FaHistory, FaFileInvoiceDollar, FaUserCog, FaSignOutAlt, FaBars, FaCheckCircle } from "react-icons/fa";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
-import useRole from "../hooks/useRole"; // We'll create this hook next
+import useRole from "../hooks/useRole";
 
 const DashboardLayout = () => {
+    const [theme, setTheme] = useState("winter");
+
     // Theme persistence in dashboard
     useEffect(() => {
-        const theme = localStorage.getItem("theme") || "winter";
-        document.querySelector("html").setAttribute("data-theme", theme);
+        const savedTheme = localStorage.getItem("theme") || "winter";
+        setTheme(savedTheme);
+        document.querySelector("html").setAttribute("data-theme", savedTheme);
     }, []);
 
     const { user, logOut } = useContext(AuthContext);
@@ -154,7 +157,7 @@ const DashboardLayout = () => {
                     {/* Sidebar content here */}
                     <div className="mb-6 px-4">
                         <Link to="/" className="font-bold text-primary flex items-center">
-                             <img src="/logo.png" className="h-24 w-auto logo-blend"/>
+                             <img src={theme === "night" ? "/logo_dark.png" : "/logo.png"} className="h-24 w-auto logo-blend"/>
                         </Link>
                         <div className="mt-2 flex flex-col gap-1">
                             <div className="badge badge-secondary uppercase font-bold px-4 py-3">{role}</div>
