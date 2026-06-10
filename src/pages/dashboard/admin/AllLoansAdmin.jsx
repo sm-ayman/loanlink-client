@@ -85,14 +85,14 @@ const AllLoansAdmin = () => {
             formData.append('showOnHome', data.showOnHome === 'true' || data.showOnHome === true);
 
             // Handle images
-            let imageUrls = [];
-            if (data.image && data.image[0]) {
-                toast.loading('Uploading image...', { id: 'upload' });
-                const photoURL = await uploadImage(data.image[0]);
-                imageUrls = [photoURL];
-                toast.success('Image uploaded', { id: 'upload' });
-            } else if (editingLoan) {
-                imageUrls = editingLoan.images || [];
+            let imageUrls = editingLoan ? (editingLoan.images || []) : [];
+            if (data.image && data.image.length > 0) {
+                toast.loading(`Uploading ${data.image.length} image(s)...`, { id: 'upload' });
+                for (let i = 0; i < data.image.length; i++) {
+                    const photoURL = await uploadImage(data.image[i]);
+                    imageUrls.push(photoURL);
+                }
+                toast.success('Images uploaded', { id: 'upload' });
             }
             
             imageUrls.forEach(url => {
@@ -378,10 +378,11 @@ const LoanModal = ({ loan, isOpen, onClose, onSave }) => {
 
                 <div className="flex flex-col w-full gap-1.5">
                     <label className="text-xs font-semibold tracking-wider text-brand-text/80 uppercase">
-                        Loan Image (Optional)
+                        Loan Images (Optional)
                     </label>
                     <input 
                         type="file" 
+                        multiple
                         className="file-input file-input-bordered w-full h-12 text-sm bg-brand-neutral/30 text-brand-text border-brand-border rounded-brand focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/40" 
                         accept="image/*"
                         disabled={isSubmitting}

@@ -292,6 +292,20 @@ const AuthProvider = ({ children }) => {
     };
   }, []);
 
+  // Handle token expiration events from api interceptor
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      console.log('Token expired event received, logging out user...');
+      logOut();
+    };
+
+    window.addEventListener('auth-expired', handleAuthExpired);
+
+    return () => {
+      window.removeEventListener('auth-expired', handleAuthExpired);
+    };
+  }, []);
+
   const authInfo = {
     user,
     backendUser,

@@ -16,12 +16,14 @@ const AddLoan = () => {
             
             let imageUrls = [];
             
-            // Upload image to ImgBB if a file is selected
-            if (data.image && data.image[0]) {
-                toast.loading('Uploading image...', { id: 'upload' });
-                const url = await uploadImage(data.image[0]);
-                imageUrls.push(url);
-                toast.success('Image uploaded', { id: 'upload' });
+            // Upload images to ImgBB if files are selected
+            if (data.image && data.image.length > 0) {
+                toast.loading(`Uploading ${data.image.length} image(s)...`, { id: 'upload' });
+                for (let i = 0; i < data.image.length; i++) {
+                    const url = await uploadImage(data.image[i]);
+                    imageUrls.push(url);
+                }
+                toast.success('Images uploaded', { id: 'upload' });
             }
 
             const formData = new FormData();
@@ -141,10 +143,11 @@ const AddLoan = () => {
                         </div>
                         <div className="form-control">
                             <label className="label">
-                                <span className="label-text font-semibold">Upload Loan Image (Optional)</span>
+                                <span className="label-text font-semibold">Upload Loan Images (Optional)</span>
                             </label>
                             <input 
                                 type="file" 
+                                multiple
                                 className="file-input file-input-bordered w-full" 
                                 accept="image/*"
                                 {...register("image")} 

@@ -31,27 +31,34 @@ const Navbar = () => {
     }
   };
 
+  const navLinkClass = ({ isActive }) => 
+    `font-medium tracking-wide transition-all duration-300 rounded-lg ${
+      isActive 
+        ? "!bg-brand-primary/10 !text-brand-primary" 
+        : "text-base-content/80 hover:!bg-base-200 hover:text-base-content"
+    }`;
+
   const navOptions = (
     <>
       <li>
-        <NavLink to="/">Home</NavLink>
+        <NavLink to="/" className={navLinkClass}>Home</NavLink>
       </li>
       <li>
-        <NavLink to="/all-loans">All Loans</NavLink>
+        <NavLink to="/all-loans" className={navLinkClass}>All Loans</NavLink>
       </li>
       {!user && (
         <>
         <li>
-          <NavLink to="/about">About Us</NavLink>
+          <NavLink to="/about" className={navLinkClass}>About Us</NavLink>
         </li>
         <li>
-          <NavLink to="/contact">Contact</NavLink>
+          <NavLink to="/contact" className={navLinkClass}>Contact</NavLink>
         </li>
         </>
       )}
       {user && (
         <li>
-          <NavLink to="/dashboard">Dashboard</NavLink>
+          <NavLink to="/dashboard" className={navLinkClass}>Dashboard</NavLink>
         </li>
       )}
     </>
@@ -64,7 +71,7 @@ const Navbar = () => {
   ];
 
   return (
-    <div className="navbar bg-base-100/95 backdrop-blur-sm shadow-sm fixed z-50 max-w-screen-2xl mx-auto transition-all duration-300">
+    <div className="navbar bg-base-100/80 backdrop-blur-xl border-b border-base-200/50 shadow-sm fixed top-0 w-full z-50 px-4 md:px-8 lg:px-12 transition-all duration-300">
       <div className="navbar-start">
         <div className="dropdown">
           <label tabIndex={0} className="btn btn-ghost lg:hidden">
@@ -133,14 +140,14 @@ const Navbar = () => {
             items={dropdownItems}
           />
         ) : (
-          <div className="flex gap-2">
+          <div className="flex gap-3">
             <Link to="/login">
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" className="hidden sm:inline-flex rounded-full">
                 Login
               </Button>
             </Link>
             <Link to="/register">
-              <Button variant="primary" size="sm">
+              <Button variant="primary" size="sm" className="rounded-full shadow-md shadow-brand-primary/20">
                 Register
               </Button>
             </Link>

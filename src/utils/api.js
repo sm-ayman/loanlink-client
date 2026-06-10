@@ -32,8 +32,8 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Token expired or invalid
-      console.log('Authentication error, redirecting to login');
-      // You might want to redirect to login or refresh token here
+      console.log('Authentication error (401), dispatching auth-expired event');
+      window.dispatchEvent(new Event('auth-expired'));
     }
     return Promise.reject(error);
   }

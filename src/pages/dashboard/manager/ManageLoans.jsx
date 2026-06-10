@@ -356,12 +356,15 @@ const EditLoanModal = ({ loan, onClose, onSuccess }) => {
     try {
         let imageUrls = loan.images || [];
         
-        // Upload image to ImgBB if a new file is selected
-        if (data.image && data.image[0]) {
-            toast.loading('Uploading new image...', { id: 'upload' });
-            const url = await uploadImage(data.image[0]);
-            imageUrls = [url]; // For now we only support one image
-            toast.success('Image uploaded', { id: 'upload' });
+        // Upload images to ImgBB if new files are selected
+        if (data.image && data.image.length > 0) {
+            toast.loading(`Uploading ${data.image.length} new image(s)...`, { id: 'upload' });
+            // Append new images to existing ones
+            for (let i = 0; i < data.image.length; i++) {
+                const url = await uploadImage(data.image[i]);
+                imageUrls.push(url);
+            }
+            toast.success('Images uploaded', { id: 'upload' });
         }
 
         const formData = new FormData();
@@ -427,10 +430,11 @@ const EditLoanModal = ({ loan, onClose, onSuccess }) => {
               </div>
               <div className="form-control">
                   <label className="label">
-                      <span className="label-text font-semibold">Update Image (Optional)</span>
+                      <span className="label-text font-semibold">Update Images (Optional)</span>
                   </label>
                   <input 
                       type="file" 
+                      multiple
                       className="file-input file-input-bordered w-full" 
                       accept="image/*"
                       {...register("image")} 

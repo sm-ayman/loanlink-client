@@ -43,7 +43,7 @@ const Hero = () => {
                 <div className="absolute bottom-10 left-1/2 w-64 h-64 bg-accent rounded-full blur-3xl mix-blend-multiply filter animate-blob animation-delay-4000"></div>
             </div>
 
-            <div className="hero-content w-full flex-col lg:flex-row-reverse z-10 justify-between gap-10 lg:gap-20">
+            <div className="hero-content max-w-screen-2xl mx-auto w-full flex-col lg:flex-row-reverse z-10 justify-between gap-10 lg:gap-20">
                 <motion.div 
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}

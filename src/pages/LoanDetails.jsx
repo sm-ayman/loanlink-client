@@ -1,10 +1,12 @@
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useState, useEffect, useContext } from "react";
 import SectionTitle from "../components/shared/SectionTitle";
-import { FaCheckCircle, FaMoneyBillWave, FaClock, FaFileAlt } from "react-icons/fa";
+import { FaCheckCircle, FaMoneyBillWave, FaClock, FaFileAlt, FaStar, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
 import LoanApplicationForm from "../components/loans/LoanApplicationForm";
 import { loanAPI, applicationAPI } from '../utils/api';
+import Card from "../components/ui/Card";
+import SkeletonCard from "../components/ui/SkeletonCard";
 import toast from "react-hot-toast";
 import { useForm } from 'react-hook-form';
 import Confetti from 'react-confetti';
@@ -19,8 +21,12 @@ const LoanDetails = () => {
     
     const [loan, setLoan] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [relatedLoans, setRelatedLoans] = useState([]);
+    const [isLoadingRelated, setIsLoadingRelated] = useState(false);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [showConfetti, setShowConfetti] = useState(false);
     const { width, height } = useWindowSize();
+
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -41,11 +47,42 @@ const LoanDetails = () => {
         fetchLoan();
     }, [id]);
 
+    useEffect(() => {
+        if (loan?.category) {
+            const fetchRelated = async () => {
+                setIsLoadingRelated(true);
+                try {
+                    const response = await loanAPI.getAllLoans({ category: loan.category });
+                    if (response.success) {
+                        // Filter out the current loan and take max 4
+                        const filtered = response.data.loans
+                            .filter(l => l._id !== loan._id)
+                            .slice(0, 4);
+                        setRelatedLoans(filtered);
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch related loans", err);
+                } finally {
+                    setIsLoadingRelated(false);
+                }
+            };
+            fetchRelated();
+        }
+    }, [loan?.category, loan?._id]);
+
     const getImageUrl = (img) => {
         if (!img) return "https://via.placeholder.com/600x400?text=Loan+Image";
         if (img.startsWith('http')) return img;
         return `${import.meta.env.VITE_API_URL?.replace('/api', '')}/uploads/${img}`;
     };
+
+    // Use actual images from DB
+    const galleryImages = loan?.images?.length > 0 
+        ? loan.images.map(img => getImageUrl(img))
+        : [getImageUrl(loan?.image)];
+
+    const nextImage = () => setCurrentImageIndex((prev) => (prev + 1) % galleryImages.length);
+    const prevImage = () => setCurrentImageIndex((prev) => (prev - 1 + galleryImages.length) % galleryImages.length);
 
     const isAdminOrManager = backendUser?.role === 'admin' || backendUser?.role === 'manager';
     const canApply = user && !isAdminOrManager;
@@ -105,8 +142,63 @@ const LoanDetails = () => {
 
     if (isLoading) {
         return (
-            <div className="min-h-screen flex justify-center items-center">
-                <span className="loading loading-spinner loading-lg text-primary"></span>
+            <div className="min-h-screen bg-brand-bg py-10 px-4">
+                <div className="max-w-7xl mx-auto space-y-10">
+                    <div className="bg-brand-card rounded-2xl shadow-xl overflow-hidden border border-brand-border animate-pulse">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+                            {/* Media Skeleton */}
+                            <div className="p-6 md:p-8 bg-brand-neutral/20 border-r border-brand-border/40">
+                                <div className="h-80 md:h-[400px] rounded-xl bg-base-300 mb-4"></div>
+                                <div className="flex gap-4">
+                                    <div className="w-24 h-16 rounded-lg bg-base-300"></div>
+                                    <div className="w-24 h-16 rounded-lg bg-base-300"></div>
+                                    <div className="w-24 h-16 rounded-lg bg-base-300"></div>
+                                </div>
+                            </div>
+                            
+                            {/* Content Skeleton */}
+                            <div className="p-6 md:p-8 flex flex-col justify-between">
+                                <div>
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div className="h-6 w-20 bg-base-300 rounded-full"></div>
+                                        <div className="h-6 w-24 bg-base-300 rounded"></div>
+                                    </div>
+                                    <div className="h-10 w-3/4 bg-base-300 rounded mb-6"></div>
+                                    
+                                    <div className="mb-8 space-y-3">
+                                        <div className="h-6 w-1/4 bg-base-300 rounded mb-2"></div>
+                                        <div className="h-4 w-full bg-base-300 rounded"></div>
+                                        <div className="h-4 w-full bg-base-300 rounded"></div>
+                                        <div className="h-4 w-5/6 bg-base-300 rounded"></div>
+                                    </div>
+                                    
+                                    <div className="h-6 w-1/3 bg-base-300 rounded mb-3"></div>
+                                    <div className="grid grid-cols-2 gap-4 mb-8">
+                                        {[1, 2, 3, 4].map(n => (
+                                            <div key={n} className="bg-brand-neutral/50 p-4 rounded-xl border border-brand-border/40">
+                                                <div className="h-3 w-1/2 bg-base-300 rounded mb-2"></div>
+                                                <div className="h-6 w-1/3 bg-base-300 rounded"></div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="mt-8 pt-6 border-t border-brand-border/50">
+                                    <div className="h-14 w-full bg-base-300 rounded-xl"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {/* Requirements Skeleton */}
+                        <div className="p-8 border-t border-brand-border bg-base-100">
+                            <div className="h-8 w-64 bg-base-300 rounded mb-6"></div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {[1, 2, 3, 4].map(n => (
+                                    <div key={n} className="h-12 w-full bg-base-300 rounded-lg"></div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -121,74 +213,176 @@ const LoanDetails = () => {
     }
 
     return (
-        <div className="min-h-screen bg-base-200 py-10 px-4">
+        <div className="min-h-screen bg-brand-bg py-10 px-4">
             {showConfetti && <Confetti width={width} height={height} numberOfPieces={300} gravity={0.15} style={{ zIndex: 9999, position: 'fixed', top: 0, left: 0 }} />}
-            <div className="max-w-4xl mx-auto bg-base-100 rounded-2xl shadow-xl overflow-hidden">
-                <div className="md:flex">
-                    <div className="md:w-1/2 h-64 md:h-auto">
-                        <img 
-                            src={getImageUrl(loan.images?.[0] || loan.image)} 
-                            alt={loan.title} 
-                            className="w-full h-full object-cover"
-                        />
-                    </div>
-                    <div className="md:w-1/2 p-8">
-                        <div className="badge badge-secondary mb-2">{loan.category}</div>
-                        <h1 className="text-3xl font-bold mb-4">{loan.title}</h1>
-                        <p className="opacity-80 mb-6">{loan.description}</p>
-                        
-                        <div className="grid grid-cols-2 gap-4 mb-8">
-                            <div className="bg-base-200 p-3 rounded-lg text-center">
-                                <p className="text-xs uppercase opacity-60 font-bold">Interest Rate</p>
-                                <p className="text-xl font-bold text-primary">{loan.interestRate}%</p>
+            
+            <div className="max-w-7xl mx-auto space-y-10">
+                {/* Main Content Area */}
+                <div className="bg-brand-card rounded-2xl shadow-xl overflow-hidden border border-brand-border">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
+                        {/* Media Section (Gallery) */}
+                        <div className="p-6 md:p-8 bg-brand-neutral/20 border-r border-brand-border/40">
+                            <div className="relative h-80 md:h-[400px] rounded-xl overflow-hidden mb-4 group shadow-md bg-base-300">
+                                <img 
+                                    src={galleryImages[currentImageIndex]} 
+                                    alt={`${loan.title} view ${currentImageIndex + 1}`} 
+                                    className="w-full h-full object-cover transition-opacity duration-500"
+                                />
+                                {/* Navigation Arrows */}
+                                {galleryImages.length > 1 && (
+                                    <>
+                                        <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 btn btn-circle btn-sm btn-neutral opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <FaChevronLeft />
+                                        </button>
+                                        <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 btn btn-circle btn-sm btn-neutral opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <FaChevronRight />
+                                        </button>
+                                    </>
+                                )}
                             </div>
-                            <div className="bg-base-200 p-3 rounded-lg text-center">
-                                <p className="text-xs uppercase opacity-60 font-bold">Max Limit</p>
-                                <p className="text-xl font-bold text-primary">${loan.maxLoanLimit?.toLocaleString()}</p>
-                            </div>
-                        </div>
-
-                        <div>
-                            <h3 className="font-bold mb-2">Available EMI Plans:</h3>
-                            <div className="flex flex-wrap gap-2 mb-8">
-                                {loan.emiPlans?.map(plan => (
-                                    <span key={plan} className="badge badge-outline">{plan}</span>
-                                ))}
-                            </div>
-                        </div>
-
-                        {canApply ? (
-                            <button 
-                                onClick={() => document.getElementById('apply_modal').showModal()}
-                                className="btn btn-primary w-full shadow-lg"
-                            >
-                                Apply Now
-                            </button>
-                        ) : (
-                            !user ? (
-                                <Link to="/login" className="btn btn-outline btn-primary w-full">Login to Apply</Link>
-                            ) : (
-                                <div className="alert alert-info">
-                                    <span>Admins and Managers cannot apply for loans.</span>
+                            
+                            {/* Thumbnails */}
+                            {galleryImages.length > 1 && (
+                                <div className="flex gap-4 overflow-x-auto pb-2 custom-scrollbar">
+                                    {galleryImages.map((img, idx) => (
+                                        <button 
+                                            key={idx}
+                                            onClick={() => setCurrentImageIndex(idx)}
+                                            className={`shrink-0 w-24 h-16 rounded-lg overflow-hidden border-2 transition-all ${currentImageIndex === idx ? 'border-brand-primary opacity-100 scale-105' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                                        >
+                                            <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                                        </button>
+                                    ))}
                                 </div>
-                            )
-                        )}
+                            )}
+                        </div>
+                        
+                        {/* Content Section */}
+                        <div className="p-6 md:p-8 flex flex-col justify-between">
+                            <div>
+                                <div className="flex justify-between items-start mb-2">
+                                    <div className="badge badge-secondary">{loan.category}</div>
+                                    <div className="flex items-center gap-1 text-yellow-500 font-bold">
+                                        <FaStar /> 4.8 <span className="text-brand-text-muted text-sm font-normal">(124 reviews)</span>
+                                    </div>
+                                </div>
+                                <h1 className="text-3xl md:text-4xl font-extrabold text-brand-text mb-6">{loan.title}</h1>
+                                
+                                <div className="mb-8">
+                                    <h3 className="text-lg font-bold mb-2 text-brand-text">Overview</h3>
+                                    <p className="text-brand-text-muted leading-relaxed">{loan.description}</p>
+                                </div>
+                                
+                                <h3 className="text-lg font-bold mb-3 text-brand-text">Key Specifications</h3>
+                                <div className="grid grid-cols-2 gap-4 mb-8">
+                                    <div className="bg-brand-neutral/50 p-4 rounded-xl border border-brand-border/40">
+                                        <div className="flex items-center gap-2 text-brand-text-muted mb-1">
+                                            <FaMoneyBillWave className="text-brand-primary" />
+                                            <p className="text-xs uppercase font-bold tracking-wider">Interest Rate</p>
+                                        </div>
+                                        <p className="text-2xl font-bold text-brand-text">{loan.interestRate}%</p>
+                                    </div>
+                                    <div className="bg-brand-neutral/50 p-4 rounded-xl border border-brand-border/40">
+                                        <div className="flex items-center gap-2 text-brand-text-muted mb-1">
+                                            <FaCheckCircle className="text-brand-secondary" />
+                                            <p className="text-xs uppercase font-bold tracking-wider">Max Limit</p>
+                                        </div>
+                                        <p className="text-2xl font-bold text-brand-text">${loan.maxLoanLimit?.toLocaleString()}</p>
+                                    </div>
+                                    <div className="bg-brand-neutral/50 p-4 rounded-xl border border-brand-border/40">
+                                        <div className="flex items-center gap-2 text-brand-text-muted mb-1">
+                                            <FaClock className="text-info" />
+                                            <p className="text-xs uppercase font-bold tracking-wider">Term Length</p>
+                                        </div>
+                                        <p className="text-xl font-bold text-brand-text">1-5 Years</p>
+                                    </div>
+                                    <div className="bg-brand-neutral/50 p-4 rounded-xl border border-brand-border/40">
+                                        <div className="flex items-center gap-2 text-brand-text-muted mb-1">
+                                            <FaFileAlt className="text-accent" />
+                                            <p className="text-xs uppercase font-bold tracking-wider">Processing Fee</p>
+                                        </div>
+                                        <p className="text-xl font-bold text-brand-text">1.5%</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Action Area */}
+                            <div className="mt-8 pt-6 border-t border-brand-border/50">
+                                {canApply ? (
+                                    <button 
+                                        onClick={() => document.getElementById('apply_modal').showModal()}
+                                        className="btn btn-primary w-full shadow-lg shadow-brand-primary/30 text-lg h-14 rounded-xl"
+                                    >
+                                        Apply For This Loan
+                                    </button>
+                                ) : (
+                                    !user ? (
+                                        <Link to="/login" className="btn btn-outline btn-primary w-full h-14 rounded-xl text-lg">Login to Apply</Link>
+                                    ) : (
+                                        <div className="alert alert-info rounded-xl">
+                                            <span>Admins and Managers cannot apply for loans.</span>
+                                        </div>
+                                    )
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Requirements Section */}
+                    <div className="p-8 border-t border-brand-border bg-base-100">
+                        <h2 className="text-2xl font-bold mb-6 flex items-center gap-2 text-brand-text">
+                            <FaFileAlt className="text-brand-primary" /> Required Documents
+                        </h2>
+                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {(loan.requiredDocuments?.length > 0 ? loan.requiredDocuments : [
+                                'Valid National ID or Passport',
+                                'Proof of Income (Last 3 months)',
+                                'Proof of Address (Utility bill)',
+                                'Recent Bank Statements'
+                            ]).map((doc, idx) => (
+                                <li key={idx} className="flex items-center gap-3 bg-brand-neutral/30 p-3 rounded-lg border border-brand-border/30">
+                                    <FaCheckCircle className="text-success shrink-0" />
+                                    <span className="text-brand-text-muted font-medium">{doc}</span>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
                 </div>
 
-                <div className="p-8 border-t border-base-200">
-                    <h2 className="text-2xl font-bold mb-4">Requirements</h2>
-                    <ul className="list-disc list-inside space-y-2 opacity-80">
-                        {loan.requiredDocuments?.map(doc => (
-                            <li key={doc}>{doc}</li>
-                        )) || (
-                            <>
-                                <li>Valid National ID or Passport</li>
-                                <li>Proof of Income (Last 3 months)</li>
-                                <li>Proof of Address (Utility bill)</li>
-                            </>
-                        )}
-                    </ul>
+
+                {/* Related Items Section */}
+                <div>
+                    <h2 className="text-2xl font-bold mb-6 text-brand-text">Related Loans</h2>
+                    {isLoadingRelated ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {[1, 2, 3, 4].map(n => <SkeletonCard key={n} />)}
+                        </div>
+                    ) : relatedLoans.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {relatedLoans.map(rLoan => (
+                                <Card key={rLoan._id} hoverable className="p-0 overflow-hidden flex flex-col h-full bg-brand-card">
+                                    <figure className="h-48 overflow-hidden relative group">
+                                        <img src={getImageUrl(rLoan.images?.[0] || rLoan.image)} alt={rLoan.title} className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500" />
+                                        <div className="absolute top-4 right-4 z-10">
+                                            <span className="badge badge-secondary">{rLoan.category}</span>
+                                        </div>
+                                    </figure>
+                                    <div className="p-5 flex flex-col flex-grow gap-3">
+                                        <h3 className="text-lg font-bold text-brand-text line-clamp-1">{rLoan.title}</h3>
+                                        <div className="flex justify-between items-center text-sm mt-auto border-t border-brand-border/30 pt-3">
+                                            <span className="text-brand-text-muted">Max Limit</span>
+                                            <span className="text-brand-primary font-bold">${rLoan.maxLoanLimit?.toLocaleString()}</span>
+                                        </div>
+                                        <Link to={`/loans/${rLoan._id}`} className="mt-2">
+                                            <button className="btn btn-primary btn-sm w-full">View Details</button>
+                                        </Link>
+                                    </div>
+                                </Card>
+                            ))}
+                        </div>
+                    ) : (
+                        <p className="text-brand-text-muted">No related loans found in this category.</p>
+                    )}
                 </div>
             </div>
 
