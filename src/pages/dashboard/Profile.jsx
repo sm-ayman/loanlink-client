@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import Modal from "../../components/ui/Modal";
 import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
     const { user, updateUserProfile } = useContext(AuthContext);
@@ -179,8 +180,8 @@ const Profile = () => {
                                     <h3 className="text-2xl font-bold mb-4">Welcome back, {user?.displayName?.split(' ')[0]}!</h3>
                                     <p className="opacity-90 max-w-md">Ready to manage your financial goals? Check your active loan applications or explore new opportunities in the market.</p>
                                     <div className="card-actions mt-6">
-                                        <button className="btn btn-white text-primary font-bold">View My Loans</button>
-                                        <button className="btn btn-ghost border-white/30 text-white">Apply New</button>
+                                        <Link to="/dashboard/my-loans" className="btn btn-white text-primary font-bold">View My Loans</Link>
+                                        <Link to="/all-loans" className="btn btn-ghost border-white/30 text-white">Apply New</Link>
                                     </div>
                                 </div>
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-20 -mt-20"></div>
