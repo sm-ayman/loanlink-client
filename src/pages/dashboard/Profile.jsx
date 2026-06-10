@@ -181,7 +181,7 @@ const Profile = () => {
                                     <p className="opacity-90 max-w-md">Ready to manage your financial goals? Check your active loan applications or explore new opportunities in the market.</p>
                                     <div className="card-actions mt-6">
                                         <Link to="/dashboard/my-loans" className="btn btn-white text-primary font-bold">View My Loans</Link>
-                                        <Link to="/all-loans" className="btn btn-ghost border-white/30 text-white">Apply New</Link>
+                                        <Link to="/all-loans" className="btn btn-ghost border-current opacity-80 hover:opacity-100">Apply New</Link>
                                     </div>
                                 </div>
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-10 rounded-full -mr-20 -mt-20"></div>
